@@ -6,6 +6,8 @@ import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { TrendingUp, Building2, Users, Settings } from 'lucide-react';
+
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -13,23 +15,36 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+        roles: ['admin', 'client'], // dono ko visible
+    },
+    {
+        title: 'Stocks',
+        href: '/stocks',
+        icon: TrendingUp,
+        roles: ['admin'], // sirf admin
+    },
+    {
+        title: 'Company',
+        href: '/company',
+        icon: Building2,
+        roles: ['admin'], // sirf admin
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
+        title: 'Test',
+        href: '#',
         icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
+    }
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ user }: { user: { role: string } }) {
+    const filteredNavItems = mainNavItems.filter(
+        (item) => !item.roles || item.roles.includes(user.role)
+    );
+
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

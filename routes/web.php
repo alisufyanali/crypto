@@ -2,6 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\CompanyController;
+
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -11,7 +16,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+        
+    Route::resource('Orders', OrderController::class);
+    Route::resource('stocks', StockController::class);
+    Route::resource('company', CompanyController::class);
+    
 });
+
+
+Route::resource('blogs', BlogController::class) ;
+
 
 
 

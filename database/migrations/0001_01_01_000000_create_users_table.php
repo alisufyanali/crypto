@@ -10,16 +10,24 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::create('users', function (Blueprint $table) {
+    { 
+         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['admin', 'broker', 'client'])->default('client');
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
+            $table->string('national_id')->nullable()->unique();
+            $table->enum('kyc_status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
+            $table->softDeletes(); // correct method
             $table->timestamps();
         });
+
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
