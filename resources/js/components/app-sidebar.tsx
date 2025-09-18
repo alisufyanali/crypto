@@ -60,7 +60,7 @@ export function AppSidebar({ user }: { user: { role: string } }) {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={filteredNavItems} />  
             </SidebarContent>
 
             <SidebarFooter>

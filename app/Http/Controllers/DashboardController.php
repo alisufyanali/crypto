@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Portfolio;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -50,6 +51,7 @@ class DashboardController extends Controller
             'totalPortfolioValue' => $totalPortfolioValue,
             'totalPnl' => $totalPnl,
             'kycStatus' => $user->kyc_status,
+            'user' => Auth::user(), // 👈 ye props me user send hoga
         ]);
     }
     
@@ -82,6 +84,7 @@ class DashboardController extends Controller
                 'pendingOrdersCount' => $pendingOrders->count(),
             ],
             'topStocks' => $topStocks,
+            'user' => Auth::user(), // 👈 ye props me user send hoga
         ]);
     }
 }

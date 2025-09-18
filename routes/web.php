@@ -6,6 +6,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
 
 
 Route::get('/', function () {
@@ -13,9 +14,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class , 'index'])->name('dashboard');
         
     Route::resource('Orders', OrderController::class);
     Route::resource('stocks', StockController::class);

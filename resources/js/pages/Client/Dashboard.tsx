@@ -1,10 +1,10 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  PieChart, 
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  PieChart,
   Activity,
   AlertCircle,
   CheckCircle,
@@ -60,17 +60,17 @@ interface Props {
   kycStatus: 'pending' | 'approved' | 'rejected';
 }
 
-export default function ClientDashboard({ 
-  portfolio, 
-  accountBalance, 
-  recentOrders, 
-  totalPortfolioValue, 
+export default function ClientDashboard({
+  portfolio,
+  accountBalance,
+  recentOrders,
+  totalPortfolioValue,
   totalPnl,
-  kycStatus 
+  kycStatus
 }: Props) {
   const totalAccountValue = accountBalance.cash_balance + totalPortfolioValue;
   const pnlPercentage = totalPortfolioValue > 0 ? (totalPnl / totalPortfolioValue) * 100 : 0;
-  
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-RW', {
       style: 'currency',
@@ -78,10 +78,11 @@ export default function ClientDashboard({
       minimumFractionDigits: 0,
     }).format(amount);
   };
-
-  const formatPercentage = (percentage: number) => {
-    return `${percentage >= 0 ? '+' : ''}${percentage.toFixed(2)}%`;
+  const formatPercentage = (percentage: any) => {
+    const num = Number(percentage) || 0; // string ho to number banayega, agar NaN ho to 0 le lega
+    return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -114,7 +115,7 @@ export default function ClientDashboard({
   return (
     <>
       <Head title="Dashboard" />
-      
+
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
@@ -124,7 +125,7 @@ export default function ClientDashboard({
                 <h1 className="text-3xl font-bold text-gray-900">Portfolio Dashboard</h1>
                 <p className="text-gray-600">Welcome back to Rwanda Stock Exchange</p>
               </div>
-              
+
               {kycStatus !== 'approved' && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex items-center">
@@ -174,8 +175,8 @@ export default function ClientDashboard({
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className={`p-2 rounded-lg ${totalPnl >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
-                  {totalPnl >= 0 ? 
-                    <TrendingUp className="w-6 h-6 text-green-600" /> : 
+                  {totalPnl >= 0 ?
+                    <TrendingUp className="w-6 h-6 text-green-600" /> :
                     <TrendingDown className="w-6 h-6 text-red-600" />
                   }
                 </div>
@@ -220,7 +221,7 @@ export default function ClientDashboard({
                     </Link>
                   </div>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                   {portfolio.length > 0 ? (
                     <table className="min-w-full divide-y divide-gray-200">
@@ -251,7 +252,7 @@ export default function ClientDashboard({
                           const currentPrice = holding.company.current_stock?.current_price || 0;
                           const pnl = holding.unrealized_pnl + holding.realized_pnl;
                           const pnlPercentage = holding.total_invested > 0 ? (pnl / holding.total_invested) * 100 : 0;
-                          
+
                           return (
                             <tr key={holding.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -273,9 +274,8 @@ export default function ClientDashboard({
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-900">{formatCurrency(currentPrice)}</div>
                                 {holding.company.current_stock && (
-                                  <div className={`text-xs ${
-                                    holding.company.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
-                                  }`}>
+                                  <div className={`text-xs ${holding.company.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
+                                    }`}>
                                     {formatPercentage(holding.company.current_stock.change_percentage)}
                                   </div>
                                 )}
@@ -330,7 +330,7 @@ export default function ClientDashboard({
                     </Link>
                   </div>
                 </div>
-                
+
                 <div className="divide-y divide-gray-200">
                   {recentOrders.length > 0 ? (
                     recentOrders.map((order) => (
@@ -346,12 +346,12 @@ export default function ClientDashboard({
                             {order.type.toUpperCase()}
                           </span>
                         </div>
-                        
+
                         <div className="mb-2">
                           <h3 className="text-sm font-medium text-gray-900">{order.company.name}</h3>
                           <p className="text-sm text-gray-500">{order.company.symbol}</p>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                           <div>
                             <span className="font-medium">Quantity:</span> {order.quantity.toLocaleString()}
@@ -360,7 +360,7 @@ export default function ClientDashboard({
                             <span className="font-medium">Price:</span> {formatCurrency(order.price_per_share)}
                           </div>
                         </div>
-                        
+
                         <div className="mt-2 text-xs text-gray-400">
                           {new Date(order.created_at).toLocaleDateString('en-RW', {
                             month: 'short',
@@ -385,7 +385,7 @@ export default function ClientDashboard({
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
                 </div>
-                
+
                 <div className="p-6 space-y-4">
                   <Link
                     href="/orders/create"
@@ -393,14 +393,14 @@ export default function ClientDashboard({
                   >
                     Place New Order
                   </Link>
-                  
+
                   <Link
                     href="/portfolio"
                     className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 text-center py-3 px-4 rounded-lg font-medium transition-colors"
                   >
                     View Full Portfolio
                   </Link>
-                  
+
                   <Link
                     href="/companies"
                     className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-900 text-center py-3 px-4 rounded-lg font-medium transition-colors"
