@@ -47,8 +47,6 @@ class CompanyController extends Controller
     
     public function create()
     {
-        $this->authorize('create', Company::class);
-        
         return Inertia::render('Companies/Create');
     }
     

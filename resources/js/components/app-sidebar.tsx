@@ -40,10 +40,11 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ user }: { user: { role: string } }) {
-    const filteredNavItems = mainNavItems.filter(
-        (item) => !item.roles || item.roles.includes(user.role)
-    );
-
+    
+    // const filteredNavItems = mainNavItems.filter(
+    //     (item) => !item.roles || item.roles.includes(user.role)
+    // );
+ const filteredNavItems = mainNavItems;
 
     return (
         <Sidebar collapsible="icon" variant="inset">

@@ -5,12 +5,12 @@ import { Head } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Companies List',
+        title: 'Companies Edit',
         href: 'company',
     },
 ];
 
-export default function CompaniesList() {
+export default function CompaniesEdit() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Companies" />
