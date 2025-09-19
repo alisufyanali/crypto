@@ -1,218 +1,235 @@
-import React, { useState } from 'react';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import React, { useState } from "react";
+import AppLayout from "@/layouts/app-layout";
+import { type BreadcrumbItem } from "@/types";
+import { Head, Link, router, usePage } from "@inertiajs/react";
+
+// shadcn/ui imports
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Stock Create',
-        href: 'stocks',
-    },
+  { title: "Stock Create", href: "stocks" },
 ];
 
 export default function StockCreate() {
-    const { companies } = usePage().props as any; // 👈 backend se companies bhejni hongi
+  const { companies } = usePage().props as any;
 
-    const [data, setData] = useState({
-        company_id: '',
-        current_price: '',
-        previous_close: '',
-        day_high: '',
-        day_low: '',
-        volume: '',
-        change_amount: '',
-        change_percentage: '',
+  const [data, setData] = useState({
+    company_id: "",
+    current_price: "",
+    previous_close: "",
+    day_high: "",
+    day_low: "",
+    volume: "",
+    change_amount: "",
+    change_percentage: "",
+  });
+  const [errors, setErrors] = useState<any>({});
+  const [processing, setProcessing] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setProcessing(true);
+
+    router.post("/stocks", data, {
+      onError: (errors) => {
+        setErrors(errors);
+        setProcessing(false);
+      },
+      onSuccess: () => {
+        setProcessing(false);
+      },
     });
-    const [errors, setErrors] = useState<any>({});
-    const [processing, setProcessing] = useState(false);
+  };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setProcessing(true);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData({
+      ...data,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-        router.post('/stocks', data, {
-            onError: (errors) => {
-                setErrors(errors);
-                setProcessing(false);
-            },
-            onSuccess: () => {
-                setProcessing(false);
-            },
-        });
-    };
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title="Create Stock" />
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setData({
-            ...data,
-            [e.target.name]: e.target.value,
-        });
-    };
+      <div className="flex flex-col gap-6 p-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">📈 Create New Stock</h1>
+          <Link
+            href="/stocks"
+            className="text-sm font-medium text-blue-600 hover:underline"
+          >
+            ← Back to Stocks
+          </Link>
+        </div>
 
-    return (
-        <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Create Stock" />
-            <div className="flex flex-col gap-4 p-4">
-                <div className="flex justify-between">
-                    <h1 className="text-2xl font-bold">Create New Stock</h1>
-                    <Link
-                        href="/stocks"
-                        className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                        Back to stocks
-                    </Link>
+        <Card className="max-w-2xl mx-auto shadow-lg">
+          <CardHeader>
+            <CardTitle>Stock Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Company Select */}
+              <div className="grid gap-2">
+                <Label>Company</Label>
+                <Select
+                  value={data.company_id}
+                  onValueChange={(value) =>
+                    setData({ ...data, company_id: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="-- Select Company --" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companies?.map((company: any) => (
+                      <SelectItem key={company.id} value={company.id.toString()}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.company_id && (
+                  <p className="text-red-500 text-xs">{errors.company_id}</p>
+                )}
+              </div>
+
+              {/* Current Price */}
+              <div className="grid gap-2">
+                <Label>Current Price</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  name="current_price"
+                  value={data.current_price}
+                  onChange={handleChange}
+                  placeholder="Enter current price"
+                />
+                {errors.current_price && (
+                  <p className="text-red-500 text-xs">{errors.current_price}</p>
+                )}
+              </div>
+
+              {/* Previous Close */}
+              <div className="grid gap-2">
+                <Label>Previous Close</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  name="previous_close"
+                  value={data.previous_close}
+                  onChange={handleChange}
+                  placeholder="Enter previous close"
+                />
+                {errors.previous_close && (
+                  <p className="text-red-500 text-xs">{errors.previous_close}</p>
+                )}
+              </div>
+
+              {/* Day High / Day Low (grid) */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Day High</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    name="day_high"
+                    value={data.day_high}
+                    onChange={handleChange}
+                    placeholder="Day high"
+                  />
+                  {errors.day_high && (
+                    <p className="text-red-500 text-xs">{errors.day_high}</p>
+                  )}
                 </div>
+                <div className="grid gap-2">
+                  <Label>Day Low</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    name="day_low"
+                    value={data.day_low}
+                    onChange={handleChange}
+                    placeholder="Day low"
+                  />
+                  {errors.day_low && (
+                    <p className="text-red-500 text-xs">{errors.day_low}</p>
+                  )}
+                </div>
+              </div>
 
-                <form onSubmit={handleSubmit} className="max-w-lg space-y-4 bg-white dark:bg-gray-800 p-5 rounded-lg shadow">
-                    
-                    {/* Company Select */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-                        <select
-                            name="company_id"
-                            value={data.company_id}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        >
-                            <option value="">-- Select Company --</option>
-                            {companies?.map((company: any) => (
-                                <option key={company.id} value={company.id}>
-                                    {company.name}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.company_id && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.company_id}</p>
-                        )}
-                    </div>
+              {/* Volume */}
+              <div className="grid gap-2">
+                <Label>Volume</Label>
+                <Input
+                  type="number"
+                  name="volume"
+                  value={data.volume}
+                  onChange={handleChange}
+                  placeholder="Enter volume"
+                />
+                {errors.volume && (
+                  <p className="text-red-500 text-xs">{errors.volume}</p>
+                )}
+              </div>
 
-                    {/* Current Price */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Current Price</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="current_price"
-                            value={data.current_price}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.current_price && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.current_price}</p>
-                        )}
-                    </div>
+              {/* Change Amount + Percentage */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>Change Amount</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    name="change_amount"
+                    value={data.change_amount}
+                    onChange={handleChange}
+                    placeholder="Change amount"
+                  />
+                  {errors.change_amount && (
+                    <p className="text-red-500 text-xs">
+                      {errors.change_amount}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label>Change %</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    name="change_percentage"
+                    value={data.change_percentage}
+                    onChange={handleChange}
+                    placeholder="Change percentage"
+                  />
+                  {errors.change_percentage && (
+                    <p className="text-red-500 text-xs">
+                      {errors.change_percentage}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-                    {/* Previous Close */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Previous Close</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="previous_close"
-                            value={data.previous_close}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.previous_close && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.previous_close}</p>
-                        )}
-                    </div>
-
-                    {/* Day High */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Day High</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="day_high"
-                            value={data.day_high}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.day_high && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.day_high}</p>
-                        )}
-                    </div>
-
-                    {/* Day Low */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Day Low</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="day_low"
-                            value={data.day_low}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.day_low && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.day_low}</p>
-                        )}
-                    </div>
-
-                    {/* Volume */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Volume</label>
-                        <input
-                            type="number"
-                            name="volume"
-                            value={data.volume}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.volume && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.volume}</p>
-                        )}
-                    </div>
-
-                    {/* Change Amount */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Change Amount</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="change_amount"
-                            value={data.change_amount}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.change_amount && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.change_amount}</p>
-                        )}
-                    </div>
-
-                    {/* Change Percentage */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Change %</label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="change_percentage"
-                            value={data.change_percentage}
-                            onChange={handleChange}
-                            className="shadow border rounded w-full py-2 px-3"
-                        />
-                        {errors.change_percentage && (
-                            <p className="text-red-500 text-xs italic mt-1">{errors.change_percentage}</p>
-                        )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                        >
-                            {processing ? 'Creating...' : 'Create Stock'}
-                        </button>
-                        <Link
-                            href="/stocks"
-                            className="inline-block font-bold text-sm text-blue-500 hover:text-blue-800"
-                        >
-                            Cancel
-                        </Link>
-                    </div>
-                </form>
-            </div>
-        </AppLayout>
-    );
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-3">
+                <Link href="/stocks">
+                  <Button variant="outline" type="button"  className="cursor-pointer">
+                    Cancel
+                  </Button>
+                </Link>
+                <Button type="submit" disabled={processing}  className="cursor-pointer">
+                  {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {processing ? "Creating..." : "Create Stock"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
 }

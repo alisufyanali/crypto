@@ -25,6 +25,14 @@ class Company extends Model
     public function currentStock()
     {
         return $this->hasOne(Stock::class)->latest();
+    } 
+
+    protected static function booted()
+    {
+        static::deleting(function ($company) {
+            $company->stocks()->delete();
+            $company->stockPrices()->delete();
+        });
     }
 
     public function stocks()

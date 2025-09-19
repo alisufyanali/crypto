@@ -19,8 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('Orders', OrderController::class);
     Route::resource('stocks', StockController::class);
     Route::get('/stocks-data', [StockController::class, 'getData'])->name('stocks.data');
-    Route::resource('company', CompanyController::class);
-    
+    Route::resource('companies', CompanyController::class);
+    Route::get('/companies-data', [CompanyController::class, 'getData']);
+
 });
 
 

@@ -8,24 +8,15 @@ use App\Models\StockPrice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Yajra\DataTables\Facades\DataTables;
 
 class CompanyController extends Controller
-{
+{ 
     public function index()
     {
-        $companies = Company::with('currentStock')
-            ->when(request('search'), function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%")
-                           ->orWhere('symbol', 'like', "%{$search}%");
-            })
-            ->orderBy('name')
-            ->paginate(20);
-            
-        return Inertia::render('Companies/Index', [
-            'companies' => $companies,
-            'filters' => request()->only(['search']),
-        ]);
+        return Inertia::render('Companies/Index' );
     }
+
     
     public function show(Company $company)
     {
@@ -44,6 +35,17 @@ class CompanyController extends Controller
             'priceHistory' => $priceHistory,
         ]);
     }
+
+//     public function show(Company $company)
+// {
+//     // relations bhi laa lo (agar chahiye ho jaise stocks waghera)
+//     $company->load('stocks', 'stockPrices');
+
+//     return inertia('companies/show', [
+//         'company' => $company
+//     ]);
+// }
+
     
     public function create()
     {
@@ -52,7 +54,6 @@ class CompanyController extends Controller
     
     public function store(Request $request)
     {
-        $this->authorize('create', Company::class);
         
         $request->validate([
             'name' => 'required|string|max:255',
@@ -102,7 +103,6 @@ class CompanyController extends Controller
     
     public function edit(Company $company)
     {
-        $this->authorize('update', $company);
         
         $company->load('currentStock');
         
@@ -113,7 +113,6 @@ class CompanyController extends Controller
     
     public function update(Request $request, Company $company)
     {
-        $this->authorize('update', $company);
         
         $request->validate([
             'name' => 'required|string|max:255',
@@ -150,8 +149,6 @@ class CompanyController extends Controller
     
     public function updatePrice(Request $request, Company $company)
     {
-        $this->authorize('updatePrice', $company);
-        
         $request->validate([
             'price' => 'required|numeric|min:0.01',
             'volume' => 'nullable|integer|min:0',
@@ -203,4 +200,26 @@ class CompanyController extends Controller
         
         return back()->with('success', 'Stock price updated successfully.');
     }
+
+    
+    public function destroy(Company $company)
+    {
+        $company->stocks()->delete();
+        $company->stockPrices()->delete();
+        $company->delete();
+
+        return redirect()->route('companies.index')
+            ->with('success', 'Company and related records deleted successfully.');
+    }
+
+    public function getData()
+    {
+        $companies = Company::latest();
+
+        return DataTables::of($companies)
+            ->make(true);
+    }
+
+
+
 }

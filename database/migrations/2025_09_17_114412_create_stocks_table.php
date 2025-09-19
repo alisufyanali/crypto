@@ -24,7 +24,6 @@ return new class extends Migration
             $table->timestamp('last_updated')->useCurrent();
             $table->softDeletes(); // correct method
             $table->timestamps();
-            
             $table->index(['company_id', 'created_at']);
         });
     }

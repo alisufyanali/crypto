@@ -25,7 +25,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Company',
-        href: '/company',
+        href: '/companies',
         icon: Building2,
         roles: ['admin'], // sirf admin
     },

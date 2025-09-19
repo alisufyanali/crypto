@@ -51,12 +51,12 @@ class StockController extends Controller
             ->with('success', 'Stock created successfully.');
     }
 
-    public function show(Stock $stock)
+    public function show($id)
     {
-        return Inertia::render('Stocks/Show', [
-            'stock'=> $stock
-            ]);
-
+        $stock = Stock::with('company')->findOrFail($id);
+        return inertia('Stocks/Show', [
+            'stock' => $stock,
+        ]);
     }
     
       // 🖊️ Edit Page
@@ -91,6 +91,7 @@ class StockController extends Controller
         return redirect()->route('stocks.index')->with('success', 'Stock updated successfully.');
     }
 
+    
     public function destroy(Stock $stock)
     {
         $stock->delete();
@@ -104,7 +105,7 @@ class StockController extends Controller
     {
         $stocks = Stock::with('company')->latest();
 
-        return \Yajra\DataTables\Facades\DataTables::of($stocks)
+        return  DataTables::of($stocks)
             ->addColumn('company_name', function ($row) {
                 return $row->company ? $row->company->name : '-';
             })
