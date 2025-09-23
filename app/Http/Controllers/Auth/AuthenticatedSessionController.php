@@ -33,7 +33,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = $request->user();
+
+        // Agar admin/broker hai
+        if (in_array($user->role, ['admin', 'broker'])) {
+            return redirect()->intended(route('dashboard'));
+        }
+
+        // Agar normal user hai
+        if ($user->kyc_status === 'approved') {
+            return redirect()->intended(route('user.dashboard'));
+        }
+
+        // Agar KYC approved nahi hai
+        return redirect()->route('kyc.upload')
+            ->with('warning', 'Please complete KYC verification before accessing the dashboard.');
     }
 
     /**

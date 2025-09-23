@@ -16,19 +16,27 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
         roles: ['admin', 'client'], // dono ko visible
-    },
-    {
-        title: 'Stocks',
-        href: '/stocks',
-        icon: TrendingUp,
-        roles: ['admin'], // sirf admin
-    },
-    {
+    } ,
+     {
         title: 'Company',
         href: '/companies',
         icon: Building2,
         roles: ['admin'], // sirf admin
     },
+    {
+        title: 'Stocks',
+        href: '/stocks',
+        icon: TrendingUp,
+        roles: ['admin' , 'broker'], // sirf admin
+    },
+   
+     {
+        title: 'Client',
+        href: '/clients',
+        icon: Building2,
+        roles: ['admin'], // sirf admin
+    },
+
 ];
 
 const footerNavItems: NavItem[] = [

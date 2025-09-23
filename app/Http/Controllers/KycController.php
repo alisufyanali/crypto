@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\KycDocument;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+
 
 class KycController extends Controller
 {
@@ -81,4 +83,46 @@ class KycController extends Controller
 
         return back()->with('success', 'KYC documents uploaded successfully.');
     }
+
+     public function approve(KycDocument $document)
+    {
+        $document->update([
+            'status' => 'approved',
+            'rejection_reason' => null,
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Document approved successfully.');
+    }
+
+    public function reject(Request $request, KycDocument $document)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:500',
+        ]);
+
+        $document->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->reason,
+            'reviewed_by' => Auth::id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return back()->with('success', 'Document rejected successfully.');
+    }
+
+    public function reset(KycDocument $doc)
+    {
+        $doc->update([
+            'status' => 'pending',
+            'rejection_reason' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
+        ]);
+        return back()->with('success', 'KYC document reset to pending.');
+    }
+
+
+
 }
