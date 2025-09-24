@@ -11,6 +11,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
 
+use App\Http\Controllers\ContactController;
+
+// Public Contact Routes
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -77,6 +82,14 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     // Market API
     Route::get('/api/market/summary', [StockController::class, 'marketSummary'])
         ->name('market.summary');
+
+
+        
+    Route::get('/admin/contacts', [ContactController::class, 'admin'])->name('admin.contacts');
+    Route::patch('/admin/contacts/{contact}/read', [ContactController::class, 'markAsRead'])->name('admin.contacts.read');
+    Route::delete('/admin/contacts/{contact}', [ContactController::class, 'destroy'])->name('admin.contacts.destroy');
+
+
 });
 
 
