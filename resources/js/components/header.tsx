@@ -24,8 +24,8 @@ export default function Header() {
                     {/* Navigation */}
                     <nav className="hidden md:flex items-center space-x-8">
                         <Link href="/" className="text-brandblue border-b-2 border-brandblue pb-1">Home</Link>
-                        <Link href="/contact" className="text-gray-600 hover:text-gray-900">About</Link>
-                        <Link href="#" className="text-gray-600 hover:text-gray-900">Contact</Link>
+                        <Link href="#" className="text-gray-600 hover:text-gray-900">About</Link>
+                        <Link href="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
                     </nav>
 
                     {/* Auth Buttons */}

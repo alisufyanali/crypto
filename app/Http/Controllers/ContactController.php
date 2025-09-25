@@ -47,7 +47,18 @@ class ContactController extends Controller
         $contacts = Contact::latest()->paginate(15);
         
         return Inertia::render('Admin/Contacts', [
-            'contacts' => $contacts
+            'contacts' => [
+                'data' => $contacts->items(),
+                'links' => $contacts->linkCollection()->toArray(),
+                'meta' => [
+                    'current_page' => $contacts->currentPage(),
+                    'from' => $contacts->firstItem(),
+                    'last_page' => $contacts->lastPage(),
+                    'per_page' => $contacts->perPage(),
+                    'to' => $contacts->lastItem(),
+                    'total' => $contacts->total(),
+                ]
+            ]
         ]);
     }
 
