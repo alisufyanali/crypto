@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useEffect, useRef } from 'react';
 import AppLayout from '@/layouts/app-layout';
+import { Head, Link, router } from '@inertiajs/react';
 import { type BreadcrumbItem } from '@/types';
 import {
   Users,
@@ -12,9 +12,54 @@ import {
   Eye,
   BarChart3,
   DollarSign,
-  AlertTriangle
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
+import * as Chart from 'chart.js';
 
+// Mock data for demonstration
+const mockStats = {
+  todayOrders: 13,
+  totalClients: 22,
+  pendingKyc: 13,
+  pendingOrdersCount: 22
+};
+
+const mockTopStocks = [
+  {
+    id: 1,
+    name: "Bank of Kigali",
+    symbol: "BK",
+    current_stock: {
+      current_price: 245000,
+      change_amount: 12000,
+      change_percentage: 5.15
+    }
+  },
+  {
+    id: 2,
+    name: "MTN Rwanda",
+    symbol: "MTN",
+    current_stock: {
+      current_price: 180000,
+      change_amount: -8000,
+      change_percentage: -4.26
+    }
+  },
+  {
+    id: 3,
+    name: "Equity Bank",
+    symbol: "EQT",
+    current_stock: {
+      current_price: 320000,
+      change_amount: 15000,
+      change_percentage: 4.92
+    }
+  }
+]; 
+
+ 
 interface Order {
   id: number;
   order_number: string;
@@ -54,11 +99,14 @@ interface Stock {
   } | null;
 }
 
+
 interface Props {
   pendingOrders: Order[];
   stats: Stats;
   topStocks: Stock[];
 }
+
+
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -67,11 +115,14 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-
 export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Props) {
   const [processingOrder, setProcessingOrder] = useState<number | null>(null);
   const [showRejectModal, setShowRejectModal] = useState<number | null>(null);
   const [rejectNotes, setRejectNotes] = useState('');
+  const chartRef = useRef<HTMLCanvasElement>(null);
+  const barChartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstance = useRef<Chart.Chart | null>(null);
+  const barChartInstance = useRef<Chart.Chart | null>(null);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-RW', {
@@ -82,105 +133,378 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
   };
 
   const formatPercentage = (percentage: any) => {
-    const num = Number(percentage) || 0; // string ho to number banayega, agar NaN ho to 0 le lega
+    const num = Number(percentage) || 0;
     return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
-
   const handleApproveOrder = (orderId: number) => {
     setProcessingOrder(orderId);
-    router.post(`/orders/${orderId}/approve`, {}, {
-      onSuccess: () => {
-        setProcessingOrder(null);
-      },
-      onError: () => {
-        setProcessingOrder(null);
-      },
-    });
+    // Simulate API call
+    setTimeout(() => setProcessingOrder(null), 1000);
   };
 
   const handleRejectOrder = (orderId: number) => {
-    if (!rejectNotes.trim()) {
-      return;
-    }
-
+    if (!rejectNotes.trim()) return;
     setProcessingOrder(orderId);
-    router.post(`/orders/${orderId}/reject`, {
-      notes: rejectNotes
-    }, {
-      onSuccess: () => {
-        setProcessingOrder(null);
-        setShowRejectModal(null);
-        setRejectNotes('');
-      },
-      onError: () => {
-        setProcessingOrder(null);
-      },
-    });
+    setTimeout(() => {
+      setProcessingOrder(null);
+      setShowRejectModal(null);
+      setRejectNotes('');
+    }, 1000);
   };
 
-  const handleExecuteOrder = (orderId: number) => {
-    if (confirm('Are you sure you want to execute this order? This action cannot be undone.')) {
-      setProcessingOrder(orderId);
-      router.post(`/orders/${orderId}/execute`, {}, {
-        onSuccess: () => {
-          setProcessingOrder(null);
-        },
-        onError: () => {
-          setProcessingOrder(null);
-        },
-      });
+  // Chart initialization
+  useEffect(() => {
+    Chart.Chart.register(...Chart.registerables);
+
+    // Area Chart for Revenue vs Expenses
+    if (chartRef.current) {
+      const ctx = chartRef.current.getContext('2d');
+      if (ctx) {
+        if (chartInstance.current) {
+          chartInstance.current.destroy();
+        }
+
+        chartInstance.current = new Chart.Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            datasets: [
+              {
+                label: 'Revenue',
+                data: [65, 75, 70, 80, 75, 85, 90, 95, 100, 110, 120, 130],
+                fill: true,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+              },
+              {
+                label: 'Expenses',
+                data: [45, 55, 50, 60, 55, 65, 70, 75, 80, 85, 90, 95],
+                fill: true,
+                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                borderColor: 'rgba(168, 85, 247, 1)',
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+              }
+            },
+            scales: {
+              x: {
+                display: true,
+                grid: {
+                  display: false,
+                },
+                ticks: {
+                  color: '#6B7280'
+                }
+              },
+              y: {
+                display: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)',
+                },
+                ticks: {
+                  color: '#6B7280'
+                }
+              }
+            },
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            }
+          }
+        });
+      }
     }
-  };
 
+    // Bar Chart for Weekly Sales
+    if (barChartRef.current) {
+      const ctx = barChartRef.current.getContext('2d');
+      if (ctx) {
+        if (barChartInstance.current) {
+          barChartInstance.current.destroy();
+        }
+
+        barChartInstance.current = new Chart.Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Sales',
+              data: [12, 25, 35, 58, 45, 20, 38],
+              backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(59, 130, 246, 1)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(59, 130, 246, 0.8)'
+              ],
+              borderRadius: 4,
+              borderSkipped: false,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+              }
+            },
+            scales: {
+              x: {
+                display: true,
+                grid: {
+                  display: false,
+                },
+                ticks: {
+                  color: '#6B7280'
+                }
+              },
+              y: {
+                display: true,
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)',
+                },
+                ticks: {
+                  color: '#6B7280'
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+      if (barChartInstance.current) {
+        barChartInstance.current.destroy();
+      }
+    };
+  }, []);
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
-      <Head title="Company" />
-      <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+      <Head title="Dashboard" />
+      <div className="m-5">
+        {/* Header */}
+        <div className="mb-8">
+          <p className="text-gray-600 mt-2">Monitor and manage your trading operations</p>
+        </div>
 
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Stock Overview</h2>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {/* Today Orders */}
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5" />
               </div>
+              <span className="text-sm font-medium">+2.34%</span>
+            </div>
+            <h3 className="text-sm font-medium opacity-90">Today's Orders</h3>
+            <p className="text-3xl font-bold">{mockStats.todayOrders}/22</p>
+          </div>
 
-              <div className="p-6">
-                {topStocks.length > 0 ? (
-                  <div className="space-y-4">
-                    {topStocks.map((stock) => (
-                      <div key={stock.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <div className="font-medium text-gray-900">{stock.symbol}</div>
-                          <div className="text-sm text-gray-500">{stock.name}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-gray-900">
-                            {stock.current_stock ? formatCurrency(stock.current_stock.current_price) : 'N/A'}
-                          </div>
-                          {stock.current_stock && (
-                            <div className={`text-sm ${stock.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
-                              }`}>
-                              {formatPercentage(stock.current_stock.change_percentage)}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <BarChart3 className="mx-auto h-8 w-8 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">No stock data available</p>
-                  </div>
-                )}
+          {/* Total Clients */}
+          <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">+2.34%</span>
+            </div>
+            <h3 className="text-sm font-medium opacity-90">Total Clients</h3>
+            <p className="text-3xl font-bold">{mockStats.totalClients}/22</p>
+          </div>
+
+          {/* Pending KYC */}
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">-2.34%</span>
+            </div>
+            <h3 className="text-sm font-medium opacity-90">Pending KYC</h3>
+            <p className="text-3xl font-bold">{mockStats.pendingKyc}/22</p>
+          </div>
+
+          {/* Pending Orders */}
+          <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5" />
+              </div>
+              <span className="text-sm font-medium">+2.34%</span>
+            </div>
+            <h3 className="text-sm font-medium opacity-90">Pending Orders</h3>
+            <p className="text-3xl font-bold">{mockStats.pendingOrdersCount}/22</p>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Revenue Chart */}
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Payment Records</h2>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">$190,090.36</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button className="text-sm text-gray-500 hover:text-gray-700">...</button>
+                </div>
               </div>
             </div>
+            <div className="p-6">
+              <div className="h-80">
+                <canvas ref={chartRef}></canvas>
+              </div>
 
+              {/* Legend */}
+              <div className="flex items-center justify-center space-x-8 mt-4">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-sm text-gray-600">Revenue</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                  <span className="text-sm text-gray-600">Expenses</span>
+                </div>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-4 gap-3 mt-6">
+                <div className="bg-blue-600 rounded-lg p-3 text-white">
+                  <div className="text-xs opacity-80">This Month</div>
+                  <div className="text-lg font-semibold">$1,342</div>
+                </div>
+                <div className="bg-cyan-500 rounded-lg p-3 text-white">
+                  <div className="text-xs opacity-80">Last Month</div>
+                  <div className="text-lg font-semibold">$1,342</div>
+                </div>
+                <div className="bg-purple-500 rounded-lg p-3 text-white">
+                  <div className="text-xs opacity-80">This Year</div>
+                  <div className="text-lg font-semibold">142</div>
+                </div>
+                <div className="bg-pink-500 rounded-lg p-3 text-white">
+                  <div className="text-xs opacity-80">Last Year</div>
+                  <div className="text-lg font-semibold">$13</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
 
+          {/* Sales Chart */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Total Sales</h2>
+                  <p className="text-sm text-gray-500">September 2025</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-gray-900">$30,567</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="h-48">
+                <canvas ref={barChartRef}></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stock Overview & Quick Actions */}
+        <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+          {/* Stock Overview */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Stock Overview</h2>
+            </div>
+            <div className="p-6">
+              {mockTopStocks.length > 0 ? (
+                <div className="space-y-4">
+                  {mockTopStocks.map((stock) => (
+                    <div key={stock.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                      <div>
+                        <div className="font-semibold text-gray-900">{stock.symbol}</div>
+                        <div className="text-sm text-gray-500">{stock.name}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-gray-900">
+                          {stock.current_stock ? formatCurrency(stock.current_stock.current_price) : 'N/A'}
+                        </div>
+                        {stock.current_stock && (
+                          <div className={`text-sm flex items-center justify-end ${stock.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                            {stock.current_stock.change_amount >= 0 ? (
+                              <ArrowUpRight className="w-3 h-3 mr-1" />
+                            ) : (
+                              <ArrowDownRight className="w-3 h-3 mr-1" />
+                            )}
+                            {formatPercentage(stock.current_stock.change_percentage)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BarChart3 className="mx-auto h-8 w-8 text-gray-400" />
+                  <p className="mt-2 text-sm text-gray-500">No stock data available</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">Quick Actions</h2>
+            </div>
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -218,45 +542,13 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               </div>
             </div>
 
-
           </div>
-          <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
 
-            {/* System Status */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">System Status</h2>
-              </div>
 
-              <div className="p-6">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Exchange Status</span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                      Online
-                    </span>
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Last Price Update</span>
-                    <span className="text-sm text-gray-900">
-                      {new Date().toLocaleTimeString('en-RW', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Active Sessions</span>
-                    <span className="text-sm text-gray-900">{stats.totalClients}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
+
         <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -377,7 +669,39 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
             </div>
           </div>
         </div>
+
+
+        {/* Reject Modal */}
+        {showRejectModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Order</h3>
+              <textarea
+                className="w-full p-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                rows={4}
+                placeholder="Enter rejection reason..."
+                value={rejectNotes}
+                onChange={(e) => setRejectNotes(e.target.value)}
+              />
+              <div className="flex space-x-3 mt-4">
+                <button
+                  onClick={() => setShowRejectModal(null)}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleRejectOrder(showRejectModal)}
+                  disabled={!rejectNotes.trim()}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  Reject Order
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
-} 
+}

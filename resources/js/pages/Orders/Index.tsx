@@ -54,9 +54,11 @@ export default function CreateOrder({ companies, userBalance }: Props) {
     }).format(amount);
   };
 
-  const formatPercentage = (percentage: number) => {
-    return `${percentage >= 0 ? '+' : ''}${percentage.toFixed(2)}%`;
-  };
+const formatPercentage = (percentage: number | string) => {
+  const num = Number(percentage) || 0;
+  return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
+};
+
 
   const calculateTotal = () => {
     const quantity = parseFloat(formData.quantity) || 0;

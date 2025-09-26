@@ -16,7 +16,12 @@ class OrderController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+          $companies = Company::active()
+            ->with('currentStock')
+            ->orderBy('name')
+            ->get();
+            
+
         if ($user->isClient()) {
             $orders = Order::with('company')
                 ->where('user_id', $user->id)
@@ -36,6 +41,7 @@ class OrderController extends Controller
         
         return Inertia::render('Orders/Index', [
             'orders' => $orders,
+            'companies' => $companies,
             'filters' => request()->only(['status', 'type']),
         ]);
     }
