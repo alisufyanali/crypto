@@ -21,6 +21,19 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+
+Route::get('/clear-cache', function () {
+    try {
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+        return 'cache cleared successfully';
+    } catch (\Exception $e){
+        return 'Error Clearing cache: ' . $e->getMessage();
+    }
+});
+
 Route::resource('blogs', BlogController::class);
 
 // ✅ AUTH REQUIRED ROUTES
