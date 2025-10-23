@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
 use Yajra\DataTables\DataTables;
+use Hash;
 
 class ClientController extends Controller
 {

@@ -6,9 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
 class AccountBalance extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
 
     protected $fillable = [
         'user_id', 'cash_balance', 'invested_amount', 
@@ -44,5 +49,24 @@ class AccountBalance extends Model
         
         $this->save();
     }
+    
+    // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('AccountBalance')
+            ->logOnly(['user_id', 'cash_balance', 'invested_amount', 
+        'total_portfolio_value', 'total_pnl'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "AccountBalance record has been {$eventName}";
+    }
+
+    // Activity Log End Here
 }
 

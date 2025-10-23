@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
+
 class Order extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
 
     protected $fillable = [
         'order_number', 'user_id', 'company_id', 'type', 'quantity', 
@@ -94,4 +100,24 @@ class Order extends Model
             $order->order_number = 'ORD-' . strtoupper(uniqid());
         });
     }
+    
+    // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Order')
+            ->logOnly(['order_number', 'user_id', 'company_id', 'type', 'quantity', 
+                        'price_per_share', 'total_amount', 'status', 'notes', 
+                        'approved_by', 'approved_at', 'executed_by', 'executed_at'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Order record has been {$eventName}";
+    }
+
+    // Activity Log End Here
 }

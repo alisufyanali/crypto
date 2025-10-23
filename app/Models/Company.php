@@ -7,9 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
 class Company extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
 
     protected $fillable = [
         'name', 'symbol', 'description', 'sector', 
@@ -75,4 +80,22 @@ class Company extends Model
             'percentage' => $current?->change_percentage ?? 0,
         ];
     }
+    
+    // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Company')
+            ->logOnly([ 'name', 'symbol', 'description', 'sector',  'market_cap', 'shares_outstanding', 'logo_path', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Company record has been {$eventName}";
+    }
+
+    // Activity Log End Here
 }

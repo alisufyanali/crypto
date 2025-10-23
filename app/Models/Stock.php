@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
+
 class Stock extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
 
     protected $fillable = [
         'company_id', 'current_price', 'previous_close', 'day_high', 
@@ -30,4 +36,23 @@ class Stock extends Model
     {
         return $this->belongsTo(Company::class);
     }
+    
+    // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Stock')
+            ->logOnly([  'company_id', 'current_price', 'previous_close', 'day_high', 
+        'day_low', 'volume', 'change_amount', 'change_percentage', 'last_updated'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Stock record has been {$eventName}";
+    }
+
+    // Activity Log End Here
 }

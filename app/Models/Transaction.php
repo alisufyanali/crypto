@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
+
 class Transaction extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
 
     protected $fillable = [
         'transaction_id', 'user_id', 'order_id', 'type', 
@@ -39,4 +45,23 @@ class Transaction extends Model
             $transaction->transaction_id = 'TXN-' . strtoupper(uniqid());
         });
     }
+
+    // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Transaction')
+            ->logOnly([  'transaction_id', 'user_id', 'order_id', 'type',  'amount', 'description', 'metadata'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Transaction record has been {$eventName}";
+    }
+
+    // Activity Log End Here
+
 }

@@ -5,9 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
 class Blog extends Model
 {
-    use SoftDeletes;
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
 
     protected $fillable = ['name', 'slug', 'description', 'user_id'];
 
@@ -15,4 +20,22 @@ class Blog extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('Blog')
+            ->logOnly(['name', 'slug', 'description', 'user_id'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Blog record has been {$eventName}";
+    }
+
+    // Activity Log End Here
 }

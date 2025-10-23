@@ -32,10 +32,11 @@ class ContactController extends Controller
 
         try {
             Contact::create($validated);
+            createNotification(null, "New Contact inquiry added " );
 
-            return back()->with('status', 'Thank you for your message! We will get back to you soon.');
+            return back()->with('success', 'Thank you for your message! We will get back to you soon.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Sorry, there was an error sending your message. Please try again.']);
+            return back()->with('error', 'Sorry, there was an error sending your message. Please try again.');
         }
     }
 

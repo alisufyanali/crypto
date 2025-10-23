@@ -12,6 +12,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClientController;
 
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\NotificationController;
+
 
 // Public Contact Routes
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
@@ -101,6 +104,23 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     Route::get('/admin/contacts', [ContactController::class, 'admin'])->name('admin.contacts');
     Route::patch('/admin/contacts/{contact}/read', [ContactController::class, 'markAsRead'])->name('admin.contacts.read');
     Route::delete('/admin/contacts/{contact}', [ContactController::class, 'destroy'])->name('admin.contacts.destroy');
+
+
+   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/{id}/toggle', [NotificationController::class, 'toggleRead'])->name('notifications.toggle');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
+
+
+    // ====== AUDIT MODULES ======
+    // Audit Log
+    Route::prefix('audit-logs')->name('audit.logs.')->group(function () {
+        Route::get('/', [AuditLogController::class, 'index'])->name('index');
+        Route::get('/export', [AuditLogController::class, 'export'])->name('export');
+        Route::get('/export-full', [AuditLogController::class, 'exportFull'])->name('exportFull');
+    });
+
 
 
 });

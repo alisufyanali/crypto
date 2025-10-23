@@ -5,10 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+// Activity Logs Files
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles , LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'phone', 'address', 
@@ -79,4 +86,23 @@ class User extends Authenticatable
     {
         return $this->kyc_status === 'approved';
     }
+
+      // Activity Log Start Here
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('User')
+            ->logOnly([ 'name', 'email', 'password', 'role', 'phone', 'address',  'national_id', 'kyc_status', 'is_active'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "User record has been {$eventName}";
+    }
+
+    // Activity Log End Here
+
 }

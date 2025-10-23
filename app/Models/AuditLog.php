@@ -5,39 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Spatie\Permission\Traits\HasRoles;
 // Activity Logs Files
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
-use Spatie\Permission\Traits\HasRoles;
 
-class StockPrice extends Model
+
+class AuditLog extends Model
 {
-    
-    use HasFactory, LogsActivity, HasRoles, SoftDeletes;
-    
-    protected $fillable = [
-        'company_id',
-        'price',
-        'price_date',
-    ];
+    use HasFactory, LogsActivity, HasRoles, SoftDeletes ;
+
+    protected $fillable = ['user_id', 'action', 'description'];
 
     // Activity Log Start Here
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->useLogName('StockPrice')
-            ->logOnly([ 'company_id',  'price', 'price_date',])
+            ->useLogName('AuditLog')
+            ->logOnly(['user_id', 'action', 'description'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 
     public function getDescriptionForEvent(string $eventName): string
     {
-        return "StockPrice record has been {$eventName}";
+        return "AuditLog record has been {$eventName}";
     }
 
     // Activity Log End Here
 
+
+
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

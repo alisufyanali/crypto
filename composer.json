@@ -13,11 +13,11 @@
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "laravel/wayfinder": "^0.1.9",
+        "laravel/wayfinder": "^0.1.12",
         "maatwebsite/excel": "3.1.67",
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-activitylog": "^4.10",
-        "spatie/laravel-permission": "6.21",
+        "spatie/laravel-permission": "^6.21",
         "tightenco/ziggy": "^2.6",
         "yajra/laravel-datatables-oracle": "^12.4"
     },
@@ -36,7 +36,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/NotificationHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
