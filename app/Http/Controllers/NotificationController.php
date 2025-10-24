@@ -23,13 +23,7 @@ class NotificationController extends Controller
         $user = Auth::user();
         $role = $user->roles->pluck('name')->first();
 
-        $notifications = Notification::where(function ($q) use ($user, $role) {
-                // $q->where('user_id', $user->id)
-                //     ->orWhere(function ($q2) use ($role) {
-                //         $q2->whereNotNull('role')->where('role', $role);
-                //     });
-            })
-            ->orderBy('created_at', 'desc')
+        $notifications = Notification::orderBy('created_at', 'desc')
             ->get(['id', 'message', 'is_read', 'created_at']);
 
         return Inertia::render('Notifications/Index', [

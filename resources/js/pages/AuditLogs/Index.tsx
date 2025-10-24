@@ -14,6 +14,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Download, Filter } from 'lucide-react';
+import { route } from 'ziggy-js';
 
 interface AuditLog {
     id: number;
@@ -45,7 +46,8 @@ interface PaginatedLogs {
     total: number;
 }
 
-interface Props {
+
+interface Props extends Record<string, any> {
     logs: PaginatedLogs;
     filters: {
         user_id?: string;
@@ -55,6 +57,7 @@ interface Props {
     };
 }
 
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
@@ -62,6 +65,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'Audit Logs',
+        href: '#',
     },
 ];
 
