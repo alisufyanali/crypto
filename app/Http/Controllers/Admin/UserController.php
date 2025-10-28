@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Inertia\Inertia;
 use Yajra\DataTables\DataTables;
+use Hash;
 
 
 class UserController extends Controller
@@ -19,7 +20,7 @@ class UserController extends Controller
 
     public function getData()
     {
-        $users = User::latest();
+        $users = User::where('role', '!=', 'client')->latest() ;
 
         return DataTables::of($users)
             ->addColumn('status', function($user) {
@@ -28,8 +29,64 @@ class UserController extends Controller
             ->make(true);
     }
 
+     // Show create form
+    public function create()
+    {
+        return Inertia::render('Users/Create');
+    }
+ 
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'role'     => 'broker', // fix role
+        ]);
+
+        return redirect()->route('users.index')->with('success', 'Users created successfully.');
+    }
+
+
+     public function edit(User $user)
+    {
+        return Inertia::render('Users/Edit', [
+            'user' => $user,
+        ]);
+    }
+
+    public function update(Request $request, User $user)
+    { 
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6|confirmed',
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('users.index')->with('success', 'Users updated successfully.');
+    }
+
+
+
     public function show(User $user)
     {
+        $user->load('kycDocuments');  
         // Show user details page
         return Inertia::render('Users/Show', [
             'user' => $user
@@ -43,13 +100,28 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 
-    // Optional: Status toggle
-    public function toggleStatus(User $user)
+      public function toggleStatus(User $user)
     {
-        $user->status = !$user->status;
+        // Toggle the 'is_active' status
+        $user->is_active = !$user->is_active;
         $user->save();
 
-        return response()->json(['success' => true, 'status' => $user->status]);
+        // Return a proper Inertia response
+        return back()->with('success', 'User status updated successfully.')->with([
+            'user' => $user // Pass updated user data back to the page
+        ]);
+    }
+
+    public function updateKycStatus(Request $request, $id)
+    {
+        $request->validate([
+            'kyc_status' => 'required|in:pending,approved,rejected',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->update(['kyc_status' => $request->kyc_status]);
+
+        return back()->with('success', 'KYC status updated successfully.');
     }
 
 }

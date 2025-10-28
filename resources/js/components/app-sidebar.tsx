@@ -5,8 +5,15 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
-import { TrendingUp, Building2, Users, Settings } from 'lucide-react';
+import {
+    LayoutGrid,
+    Building2,
+    TrendingUp,
+    Users,
+    ShoppingCart,
+    FileText,
+    ShieldCheck, Folder, Settings
+} from "lucide-react";
 
 import AppLogo from './app-logo';
 
@@ -15,28 +22,44 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
-        roles: ['admin', 'client'], // dono ko visible
-    } ,
-     {
+        roles: ['admin', 'client'],
+    },
+    {
         title: 'Company',
         href: '/companies',
-        icon: Building2,
-        roles: ['admin'], // sirf admin
+        icon: Building2, // 🏢 Company ke liye best fit
+        roles: ['admin'],
     },
     {
         title: 'Stocks',
         href: '/stocks',
-        icon: TrendingUp,
-        roles: ['admin' , 'broker'], // sirf admin
+        icon: TrendingUp, // 📈 Financial growth icon
+        roles: ['admin', 'broker'],
     },
-   
-     {
+    {
         title: 'Client',
         href: '/clients',
-        icon: Building2,
-        roles: ['admin'], // sirf admin
+        icon: Users, // 👥 Clients = Users icon
+        roles: ['admin'],
     },
-
+    {
+        title: 'Users',
+        href: '/users',
+        icon: ShieldCheck, // 👤 + Security/Admin vibes
+        roles: ['admin'],
+    },
+    {
+        title: 'Order',
+        href: '/orders',
+        icon: ShoppingCart, // 🛒 Clear e-commerce/order meaning
+        roles: ['admin'],
+    },
+    {
+        title: 'Audit logs',
+        href: '/audit-logs',
+        icon: FileText, // 📜 Log/document style
+        roles: ['admin'],
+    },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -48,11 +71,11 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar({ user }: { user: { role: string } }) {
-    
+
     // const filteredNavItems = mainNavItems.filter(
     //     (item) => !item.roles || item.roles.includes(user.role)
     // );
- const filteredNavItems = mainNavItems;
+    const filteredNavItems = mainNavItems;
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -69,7 +92,7 @@ export function AppSidebar({ user }: { user: { role: string } }) {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={filteredNavItems} />  
+                <NavMain items={filteredNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

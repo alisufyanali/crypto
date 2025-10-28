@@ -61,6 +61,7 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
         Route::get('data', [UserController::class, 'getData'])->name('data');
         Route::post('{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('toggleStatus');
         Route::resource('/', UserController::class)->parameters(['' => 'user'])->except(['data']); 
+         Route::post('update-kyc/{id}', [UserController::class, 'updateKycStatus'])->name('updateKyc');
     });
 
     Route::prefix('clients')->name('clients.')->group(function () {
@@ -125,6 +126,18 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
 
 });
 
+
+Route::middleware(['auth'])->group(function () {
+    // Notification routes
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/live', [NotificationController::class, 'live'])->name('live');
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
+        Route::post('/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
+    });
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

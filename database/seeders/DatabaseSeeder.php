@@ -22,7 +22,8 @@ class DatabaseSeeder extends Seeder
             PortfoliosTableSeeder::class,
             AccountBalancesTableSeeder::class,
             KycDocumentsTableSeeder::class,
-            TransactionsTableSeeder::class,
+            TransactionsTableSeeder::class,    
+            NotificationSeeder::class,
         ]);
     }
 

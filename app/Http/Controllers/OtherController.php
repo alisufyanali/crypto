@@ -14,7 +14,7 @@ class OtherController extends Controller
      */
     public function about(): Response
     {
-        return Inertia::render('Contact');
+        return Inertia::render('Other/About');
     }
  
 }

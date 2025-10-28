@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller; // ✅ Ensure this line is present
+use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,21 +10,16 @@ use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
-    public function __construct()
-    {
-        // $this->middleware('auth');
-    }
-
     /**
-     * 🔹 Show all notifications (user + role based)
+     * Get all notifications for authenticated user
      */
     public function index()
     {
         $user = Auth::user();
-        $role = $user->roles->pluck('name')->first();
-
-        $notifications = Notification::orderBy('created_at', 'desc')
-            ->get(['id', 'message', 'is_read', 'created_at']);
+        
+        $notifications = Notification::forUser($user)
+            ->latest()
+            ->get(['id', 'title', 'message', 'type', 'is_read', 'created_at']);
 
         return Inertia::render('Notifications/Index', [
             'notifications' => $notifications,
@@ -32,52 +27,71 @@ class NotificationController extends Controller
     }
 
     /**
-     * 🔹 Mark notification as read
+     * Get live notifications (for polling)
+     */
+    public function live()
+    {
+        $user = Auth::user();
+        
+        $notifications = Notification::forUser($user)
+            ->latest()
+            ->limit(10)
+            ->get(['id', 'title', 'message', 'type', 'is_read', 'created_at']);
+
+        $unreadCount = Notification::forUser($user)
+            ->where('is_read', false)
+            ->count();
+
+        return response()->json([
+            'notifications' => $notifications,
+            'unread_count' => $unreadCount,
+        ]);
+    }
+
+    /**
+     * Mark notification as read
      */
     public function markAsRead($id)
     {
         $notification = $this->findNotification($id);
         $notification->update(['is_read' => true]);
 
-        return back()->with('success', 'Notification marked as read.');
+        return response()->json(['success' => true]);
     }
 
     /**
-     * 🔹 Toggle read/unread (optional)
+     * Mark all as read
      */
-    public function toggleRead($id)
+    public function markAllAsRead()
     {
-        $notification = $this->findNotification($id);
-        $notification->update(['is_read' => !$notification->is_read]);
+        $user = Auth::user();
+        
+        Notification::forUser($user)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
 
-        return back()->with('success', 'Notification status updated.');
+        return response()->json(['success' => true]);
     }
 
     /**
-     * 🔹 Delete notification
+     * Delete notification
      */
     public function destroy($id)
     {
         $notification = $this->findNotification($id);
         $notification->delete();
 
-        return back()->with('success', 'Notification deleted successfully.');
+        return response()->json(['success' => true]);
     }
 
     /**
-     * 🔹 Unread count for live badge
+     * Get unread count only
      */
     public function unreadCount()
     {
         $user = Auth::user();
-        $role = $user->roles->pluck('name')->first();
-
-        $count = Notification::where(function ($q) use ($user, $role) {
-            $q->where('user_id', $user->id)
-                ->orWhere(function ($q2) use ($role) {
-                    $q2->whereNotNull('role')->where('role', $role);
-                });
-        })
+        
+        $count = Notification::forUser($user)
             ->where('is_read', false)
             ->count();
 
@@ -85,7 +99,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * 🔹 Helper for authorization
+     * Find and authorize notification
      */
     protected function findNotification($id)
     {
@@ -94,6 +108,7 @@ class NotificationController extends Controller
 
         $notification = Notification::findOrFail($id);
 
+        // Check if user has access to this notification
         if ($notification->user_id && $notification->user_id !== $user->id) {
             abort(403, 'Unauthorized');
         }

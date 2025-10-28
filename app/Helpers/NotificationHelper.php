@@ -2,20 +2,30 @@
 
 use App\Models\Notification;
 
-/**
- * @param string|null $role     Target role (e.g. 'Admin','PM','User') OR null for user-specific
- * @param string $message
- * @param int|null $userId      Specific user id (optional)
- * @param string $type
- */
-if (! function_exists('createNotification')) {
-    function createNotification(?string $role, string $message, ?int $userId = null, string $type = 'general') {
+if (!function_exists('createNotification')) {
+    /**
+     * Create a notification
+     * 
+     * @param string|null $role Target role (e.g., 'Admin', 'PM', 'User')
+     * @param string $message Notification message
+     * @param int|null $userId Specific user ID (optional)
+     * @param string $type Notification type
+     * @param string|null $title Notification title
+     */
+    function createNotification(
+        ?string $role, 
+        string $message, 
+        ?int $userId = null, 
+        string $type = 'general',
+        ?string $title = null
+    ) {
         return Notification::create([
             'role' => $role,
             'user_id' => $userId,
             'type' => $type,
+            'title' => $title,
             'message' => $message,
-            'is_read'   => false,
+            'is_read' => false,
         ]);
     }
 }
