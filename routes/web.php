@@ -2,28 +2,19 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\KycController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\StockController;
-use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ClientController;
-
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OtherController;
 
-
-// Public Contact Routes
-Route::get('/contact', [ContactController::class, 'index'])->name('contact');
-Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
-
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
-
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\StockController;
+use App\Http\Controllers\Admin\CompanyController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\KycController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\NotificationController;
 
 Route::get('/clear-cache', function () {
     try {
@@ -36,6 +27,15 @@ Route::get('/clear-cache', function () {
         return 'Error Clearing cache: ' . $e->getMessage();
     }
 });
+
+// Public Contact Routes
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+Route::get('/about-us', [OtherController::class, 'about'])->name('about');
+
+Route::get('/', function () {
+    return Inertia::render('welcome');
+})->name('home');
 
 Route::resource('blogs', BlogController::class);
 

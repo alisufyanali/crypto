@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Stock;
 use App\Models\StockPrice;
@@ -11,7 +12,8 @@ use Inertia\Inertia;
 use Yajra\DataTables\Facades\DataTables;
 
 class CompanyController extends Controller
-{ 
+{
+
     public function index()
     {
         return Inertia::render('Companies/Index' );
