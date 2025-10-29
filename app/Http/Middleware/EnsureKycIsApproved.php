@@ -11,12 +11,19 @@ class EnsureKycIsApproved
     {
         $user = $request->user();
 
-        // If user logged in but KYC not approved
-        if ($user && $user->kyc_status !== 'approved') {
+        // If approved but still on upload page → redirect to dashboard
+        if ($user && $user->kyc_status === 'approved' && $request->routeIs('kyc.upload')) {
+            return redirect()->route('user.dashboard')
+                ->with('success', 'Your KYC is approved! Welcome to your dashboard.');
+        }
+
+        // If not approved but trying to access dashboard → send back to upload
+        if ($user && $user->kyc_status !== 'approved' && $request->routeIs('user.dashboard')) {
             return redirect()->route('kyc.upload')
-                ->with('warning', 'Please complete KYC verification before accessing the dashboard.');
+                ->with('warning', 'Please complete your KYC before accessing the dashboard.');
         }
 
         return $next($request);
     }
+
 }

@@ -40,13 +40,15 @@ Route::get('/', function () {
 Route::resource('blogs', BlogController::class);
 
 // ✅ AUTH REQUIRED ROUTES
-Route::middleware('auth')->group(function () {
-    Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
-    Route::post('/kyc/upload', [KycController::class, 'store'])->name('kyc.store');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
+//     Route::post('/kyc/upload', [KycController::class, 'store'])->name('kyc.store');
+// });
 
 // ✅ USER-SPECIFIC ROUTES (with KYC middleware)
 Route::middleware(['auth', 'kyc'])->group(function () {
+      Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
+    Route::post('/kyc/upload', [KycController::class, 'store'])->name('kyc.store');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('user.dashboard');
     Route::get('/orders', [OrderController::class, 'index'])->name('user.orders');
 });
