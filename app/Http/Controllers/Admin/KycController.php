@@ -32,6 +32,8 @@ class KycController extends Controller
             'national_id' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'utility_bill' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
+        $user = auth()->user();
+        $uploaded = [];
 
         // ---- National ID Upload ----
         if ($request->hasFile('national_id')) {
@@ -39,7 +41,7 @@ class KycController extends Controller
             $path = $file->store('kyc', 'public');
 
             // delete old file if exists
-            $doc = KycDocument::where('user_id', auth()->id())
+            $doc = KycDocument::where('user_id', $user->id)
                 ->where('document_type', 'national_id')
                 ->first();
 
@@ -48,14 +50,16 @@ class KycController extends Controller
             }
 
             KycDocument::updateOrCreate(
-                ['user_id' => auth()->id(), 'document_type' => 'national_id'],
+                ['user_id' => $user->id, 'document_type' => 'national_id'],
                 [
                     'file_path' => $path,
                     'original_filename' => $file->getClientOriginalName(),
                     'status' => 'pending',
-                    'rejection_reason' => null, // reset rejection reason
+                    'rejection_reason' => null,
                 ]
             );
+
+            $uploaded[] = 'National ID';
         }
 
         // ---- Utility Bill Upload ----
@@ -63,7 +67,7 @@ class KycController extends Controller
             $file = $request->file('utility_bill');
             $path = $file->store('kyc', 'public');
 
-            $doc = KycDocument::where('user_id', auth()->id())
+            $doc = KycDocument::where('user_id', $user->id)
                 ->where('document_type', 'utility_bill')
                 ->first();
 
@@ -72,13 +76,27 @@ class KycController extends Controller
             }
 
             KycDocument::updateOrCreate(
-                ['user_id' => auth()->id(), 'document_type' => 'utility_bill'],
+                ['user_id' => $user->id, 'document_type' => 'utility_bill'],
                 [
                     'file_path' => $path,
                     'original_filename' => $file->getClientOriginalName(),
                     'status' => 'pending',
                     'rejection_reason' => null,
                 ]
+            );
+
+            $uploaded[] = 'Utility Bill';
+        }
+
+        // ✅ Notify Admin (ID = 1)
+        if (!empty($uploaded)) {
+            $docs = implode(' & ', $uploaded);
+            createNotification(
+                'admin',
+                "{$user->name} uploaded {$docs} for KYC verification.",
+                1, // Admin ID
+                'kyc',
+                'New KYC Submission'
             );
         }
 
@@ -94,8 +112,18 @@ class KycController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        // ✅ Send notification to that user
+        createNotification(
+            null,
+            "Your {$document->document_type} has been approved by the admin.",
+            $document->user_id,
+            'kyc',
+            'KYC Approved'
+        );
+
         return back()->with('success', 'Document approved successfully.');
     }
+
 
     public function reject(Request $request, KycDocument $document)
     {
@@ -109,6 +137,15 @@ class KycController extends Controller
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
         ]);
+
+        // ✅ Send notification to that user
+        createNotification(
+            null,
+            "Your {$document->document_type} has been rejected. Reason: {$request->reason}",
+            $document->user_id,
+            'kyc',
+            'KYC Rejected'
+        );
 
         return back()->with('success', 'Document rejected successfully.');
     }

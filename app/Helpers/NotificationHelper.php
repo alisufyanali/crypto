@@ -19,6 +19,9 @@ if (!function_exists('createNotification')) {
         string $type = 'general',
         ?string $title = null
     ) {
+          // ✅ Default user_id = 1 (admin) if not provided
+        $userId = $userId ?? 1;
+        
         return Notification::create([
             'role' => $role,
             'user_id' => $userId,

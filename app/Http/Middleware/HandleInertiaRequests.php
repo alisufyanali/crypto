@@ -42,8 +42,19 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
-            'auth' => [
-                'user' => $request->user(),
+             'auth' => [
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'avatar' => $request->user()->avatar ?? null,
+                    // ✅ Add role - handle both direct role and relationship
+                    'role' => $request->user()->roles?->first()?->name ?? 
+                             $request->user()->role ?? 
+                             'guest',
+                    // ✅ Or if you want all roles
+                    'roles' => $request->user()->roles?->pluck('name')->toArray() ?? [],
+                ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             // 👇 Flash messages inject
@@ -52,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'success' => fn () => $request->session()->get('success'),
             ],
+
         ];
     }
 }

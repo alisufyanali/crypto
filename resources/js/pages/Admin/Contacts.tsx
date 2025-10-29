@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Trash2, Mail, Phone, Building } from "lucide-react";
-
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
+import { dashboard } from '@/routes';
 interface Contact {
   id: number;
   name: string;
@@ -57,12 +59,22 @@ export default function AdminContacts({ contacts, status }: AdminContactsProps) 
     }
   };
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'dashboard',
+        href: dashboard().url,
+    },
+     {
+        title: 'Contact',
+        href: '#',
+    },
+];
   const unreadCount = contacts.data.filter((c) => !c.is_read).length;
 
   return (
-    <>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Contact Messages - Admin" />
-
+      <br />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
@@ -216,6 +228,6 @@ export default function AdminContacts({ contacts, status }: AdminContactsProps) 
           )}
         </div>
       </div>
-    </>
+    </AppLayout>
   );
 }

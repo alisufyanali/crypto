@@ -33,6 +33,10 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
         
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        
         $notifications = Notification::forUser($user)
             ->latest()
             ->limit(10)
@@ -53,10 +57,21 @@ class NotificationController extends Controller
      */
     public function markAsRead($id)
     {
-        $notification = $this->findNotification($id);
-        $notification->update(['is_read' => true]);
+        try {
+            $user = Auth::user();
+            $notification = $this->findNotificationForUser($id, $user);
+            
+            if (!$notification) {
+                return response()->json(['error' => 'Notification not found or unauthorized'], 403);
+            }
+            
+            $notification->update(['is_read' => true]);
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Notification marked as read']);
+        } catch (\Exception $e) {
+            \Log::error('Mark as read error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -64,13 +79,22 @@ class NotificationController extends Controller
      */
     public function markAllAsRead()
     {
-        $user = Auth::user();
-        
-        Notification::forUser($user)
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+        try {
+            $user = Auth::user();
+            
+            $updated = Notification::forUser($user)
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
 
-        return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true, 
+                'message' => 'All notifications marked as read',
+                'count' => $updated
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Mark all as read error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -78,10 +102,21 @@ class NotificationController extends Controller
      */
     public function destroy($id)
     {
-        $notification = $this->findNotification($id);
-        $notification->delete();
+        try {
+            $user = Auth::user();
+            $notification = $this->findNotificationForUser($id, $user);
+            
+            if (!$notification) {
+                return response()->json(['error' => 'Notification not found or unauthorized'], 403);
+            }
+            
+            $notification->delete();
 
-        return response()->json(['success' => true]);
+            return response()->json(['success' => true, 'message' => 'Notification deleted']);
+        } catch (\Exception $e) {
+            \Log::error('Delete notification error: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -91,6 +126,10 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
         
+        if (!$user) {
+            return response()->json(['count' => 0]);
+        }
+        
         $count = Notification::forUser($user)
             ->where('is_read', false)
             ->count();
@@ -99,23 +138,31 @@ class NotificationController extends Controller
     }
 
     /**
-     * Find and authorize notification
+     * ✅ Fixed: Find notification for specific user with proper authorization
      */
-    protected function findNotification($id)
+    protected function findNotificationForUser($id, $user)
     {
-        $user = Auth::user();
-        $role = $user->roles->pluck('name')->first();
-
-        $notification = Notification::findOrFail($id);
-
-        // Check if user has access to this notification
-        if ($notification->user_id && $notification->user_id !== $user->id) {
-            abort(403, 'Unauthorized');
+        if (!$user) {
+            return null;
         }
 
-        if ($notification->role && $notification->role !== $role) {
-            abort(403, 'Unauthorized');
-        }
+        $role = optional($user->roles)->pluck('name')->first();
+
+        // Find notification that belongs to this user OR their role
+        $notification = Notification::where('id', $id)
+            ->where(function ($q) use ($user, $role) {
+                // User-specific notification
+                $q->where('user_id', $user->id);
+                
+                // OR role-based notification (if user has that role)
+                if ($role) {
+                    $q->orWhere(function($q2) use ($role) {
+                        $q2->where('role', $role)
+                           ->whereNull('user_id');
+                    });
+                }
+            })
+            ->first();
 
         return $notification;
     }

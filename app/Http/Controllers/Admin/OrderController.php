@@ -90,8 +90,8 @@ class OrderController extends Controller
                 return back()->withErrors(['quantity' => 'Insufficient shares to sell.']);
             }
         }
-        
-        Order::create([
+
+        $order = Order::create([
             'user_id' => $user->id,
             'company_id' => $request->company_id,
             'type' => $request->type,
@@ -100,10 +100,20 @@ class OrderController extends Controller
             'total_amount' => $totalAmount,
             'status' => 'pending',
         ]);
-        
+
+        // ✅ Send notification to admin (user_id = 1)
+        createNotification(
+            'admin',
+            "New {$request->type} order placed by {$user->name} for {$company->name} ({$request->quantity} shares).",
+            1,
+            'order',
+            'New Order Pending Approval'
+        );
+
         return redirect()->route('orders.index')
             ->with('success', 'Order submitted successfully and is pending approval.');
     }
+
     
     public function show(Order $order)
     {

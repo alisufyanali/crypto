@@ -44,6 +44,16 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+       
+        // Create notification for admin
+        createNotification(
+            'admin', // role
+            "New user registered: {$user->name}", // message
+            1, // no specific user_id, since it's for all admins
+            'registration', // type
+            'New User Registration' // title
+        );
+
 
         Auth::login($user);
 

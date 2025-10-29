@@ -16,11 +16,13 @@ export interface NavGroup {
 }
 
 export interface NavItem {
-    title: string;
-    href: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
+     title: string;
+    href: string;
+    icon?: LucideIcon;
+    roles?: string[];
+    badge?: number | string;
     isActive?: boolean;
-    roles?: string[];   // 👈 yeh add karo
+    items?: NavItem[];
 }
 
 export interface SharedData {
@@ -40,4 +42,16 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+      role: string;
+    roles?: string[];
+}
+
+export interface PageProps {
+    auth: {
+        user: User | null;
+    };
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }

@@ -129,6 +129,15 @@ class ClientController extends Controller
         $client->kyc_status = $request->kyc_status;
         $client->save();
 
+         // ✅ Send notification to admin as well (optional)
+         createNotification(
+            'client',
+            "KYC status has been updated to {$request->kyc_status}.",
+            $client->id, // all admins
+            'kyc',
+            'Client KYC Updated'
+        );
+
         return back()->with('success', 'KYC status updated successfully.');
     }
 

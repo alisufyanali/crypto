@@ -46,11 +46,10 @@ Route::middleware('auth')->group(function () {
 });
 
 // ✅ USER-SPECIFIC ROUTES (with KYC middleware)
-Route::middleware(['auth', 'kyc'])
-    ->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('user.dashboard');
-        Route::get('/orders', [OrderController::class, 'index'])->name('user.orders');
-    });
+Route::middleware(['auth', 'kyc'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('user.dashboard');
+    Route::get('/orders', [OrderController::class, 'index'])->name('user.orders');
+});
     
 
 Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () {
@@ -77,8 +76,6 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
 
 
 
-    // Order Management
-    Route::resource('orders', OrderController::class);
     
     // Stock Management
     Route::resource('stocks', StockController::class);
@@ -107,12 +104,6 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     Route::delete('/admin/contacts/{contact}', [ContactController::class, 'destroy'])->name('admin.contacts.destroy');
 
 
-   Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/{id}/toggle', [NotificationController::class, 'toggleRead'])->name('notifications.toggle');
-    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
-    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
-
 
     // ====== AUDIT MODULES ======
     // Audit Log
@@ -137,6 +128,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
     });
+
+    // Order Management
+    Route::resource('orders', OrderController::class);
+
+
 });
 
 require __DIR__.'/settings.php';

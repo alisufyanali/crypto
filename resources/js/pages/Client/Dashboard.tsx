@@ -213,7 +213,7 @@ export default function ClientDashboard({
                   <div className="flex justify-between items-center">
                     <h2 className="text-lg font-semibold text-gray-900">Your Holdings</h2>
                     <Link
-                      href="/orders/create"
+                      href="/orders"
                       className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -303,7 +303,7 @@ export default function ClientDashboard({
                       <p className="mt-1 text-sm text-gray-500">Get started by placing your first order.</p>
                       <div className="mt-6">
                         <Link
-                          href="/orders/create"
+                          href="/orders"
                           className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700"
                         >
                           <Plus className="w-4 h-4 mr-2" />
@@ -388,7 +388,7 @@ export default function ClientDashboard({
 
                 <div className="p-6 space-y-4">
                   <Link
-                    href="/orders/create"
+                    href="/orders"
                     className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors"
                   >
                     Place New Order

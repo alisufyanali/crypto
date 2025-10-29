@@ -31,14 +31,24 @@ class ContactController extends Controller
         ]);
 
         try {
-            Contact::create($validated);
-            createNotification(null, "New Contact inquiry added " );
+            // ✅ Create contact first
+            $contact = Contact::create($validated);
+
+            // ✅ Send notification to admin(s)
+            createNotification(
+                'admin', // role
+                "New contact inquiry received from {$contact->name} ({$contact->email})", // message
+                null, // user_id (null means all admins)
+                'contact', // type
+                'New Contact Inquiry' // title
+            );
 
             return back()->with('success', 'Thank you for your message! We will get back to you soon.');
         } catch (\Exception $e) {
             return back()->with('error', 'Sorry, there was an error sending your message. Please try again.');
         }
     }
+
 
     /**
      * Display all contact messages (Admin only)
