@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\PortfolioController;
 
 Route::get('/clear-cache', function () {
     try {
@@ -134,6 +135,9 @@ Route::middleware(['auth'])->group(function () {
     // Order Management
     Route::resource('orders', OrderController::class);
 
+
+    Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+    Route::post('/users/{user}/update-balance', [PortfolioController::class, 'updateBalance'])->name('users.update-balance');
 
 });
 
