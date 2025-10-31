@@ -36,12 +36,21 @@ export default function Header() {
                                     </svg>
                                 </button> */}
                         {auth.user ? (
-                            <Link
-                                href={dashboard()}
-                                className="bg-brandblue text-white px-4 py-2 rounded-lg font-medium hover:bg-brandblue transition-colors"
-                            >
-                                Dashboard
-                            </Link>
+                          auth.user.role === 'admin' ? (
+                                <Link
+                                    href="/admin/dashboard"
+                                    className="bg-brandblue text-white px-4 py-2 rounded-lg font-medium hover:bg-brandblue transition-colors"
+                                >
+                                      Dashboard
+                                </Link>
+                            ) : (
+                                <Link
+                                    href="/dashboard"
+                                    className="bg-brandblue text-white px-4 py-2 rounded-lg font-medium hover:bg-brandblue transition-colors"
+                                >
+                                      Dashboard
+                                </Link>
+                            )
                         ) : (
                             <>
                                 <Link

@@ -14,68 +14,51 @@ import {
     FileText,
     ShieldCheck,
     Folder,
-    MessageSquare
+    MessageSquare,
+    Bell,
+    Briefcase,
 } from "lucide-react";
+
 
 import AppLogo from './app-logo';
 import { filterNavByRole } from '@/utils/nav-helpers';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: 'admin/dashboard',
-        icon: LayoutGrid,
-        roles: ['admin'],
-    },
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-        roles: ['client'],
-    },
-    {
-        title: 'Company',
-        href: '/companies',
-        icon: Building2,
-        roles: ['admin'],
-    },
-    {
-        title: 'Stocks',
-        href: '/stocks',
-        icon: TrendingUp,
-        roles: ['admin', 'broker'],
-    },
-    {
-        title: 'Client',
-        href: '/clients',
-        icon: Users,
-        roles: ['admin'],
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: ShieldCheck,
-        roles: ['admin'],
-    },
-    {
-        title: 'Order',
-        href: '/orders',
-        icon: ShoppingCart,
-        roles: ['admin'],
-    },
-    {
-        title: 'Audit logs',
-        href: '/audit-logs',
-        icon: FileText,
-        roles: ['admin'],
-    },
-    {
-        title: 'Contact Forms',
-        href: '/admin/contacts',
-        icon: MessageSquare,
-        roles: ['admin'],
-    },
+const iconMap: Record<string, any> = {
+  dashboard: LayoutGrid,
+  company: Building2,
+  stocks: TrendingUp,
+  client: Users,
+  users: ShieldCheck,
+  order: ShoppingCart,
+  audit: FileText,
+  contact: MessageSquare,
+  notifications: Bell,
+  portfolio: Briefcase,
+};
+
+const rawNavItems = [
+  { title: 'Dashboard', href: 'admin/dashboard', roles: ['admin'] },
+  { title: 'Dashboard', href: '/dashboard', roles: ['client'] },
+  { title: 'Company', href: '/companies', roles: ['admin', 'broker'] },
+  { title: 'Stocks', href: '/stocks', roles: ['admin', 'broker'] },
+  { title: 'Client', href: '/clients', roles: ['admin', 'broker'] },
+  { title: 'Users', href: '/users', roles: ['admin', 'broker'] },
+  { title: 'Order', href: '/orders', roles: ['admin', 'broker', 'client'] },
+  { title: 'Audit Logs', href: '/audit-logs', roles: ['admin'] },
+  { title: 'Contact Forms', href: '/admin/contacts', roles: ['admin', 'broker'] },
+  { title: 'Notifications', href: '/notifications', roles: ['admin', 'broker', 'client'] },
+  { title: 'Portfolio', href: '/portfolio', roles: ['admin', 'broker', 'client'] },
 ];
+
+const mainNavItems: NavItem[] = rawNavItems.map((item) => {
+  const key = item.title.toLowerCase();
+  const match = Object.keys(iconMap).find((iconKey) => key.includes(iconKey));
+  return {
+    ...item,
+    icon: match ? iconMap[match] : Folder, // default icon agar match na mile
+  };
+});
+
 
 const footerNavItems: NavItem[] = [
     {

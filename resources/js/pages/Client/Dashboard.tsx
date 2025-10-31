@@ -11,6 +11,8 @@ import {
   Clock,
   Plus
 } from 'lucide-react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 
 interface Portfolio {
   id: number;
@@ -59,6 +61,14 @@ interface Props {
   totalPnl: number;
   kycStatus: 'pending' | 'approved' | 'rejected';
 }
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+  }
+];
+
 
 export default function ClientDashboard({
   portfolio,
@@ -113,7 +123,7 @@ export default function ClientDashboard({
   };
 
   return (
-    <>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Dashboard" />
 
       <div className="min-h-screen bg-gray-50">
@@ -413,6 +423,6 @@ export default function ClientDashboard({
           </div>
         </div>
       </div>
-    </>
+    </AppLayout>
   );
 }

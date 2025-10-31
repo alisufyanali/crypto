@@ -51,7 +51,6 @@ Route::middleware(['auth', 'kyc'])->group(function () {
       Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
     Route::post('/kyc/upload', [KycController::class, 'store'])->name('kyc.store');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('user.dashboard');
-    Route::get('/orders', [OrderController::class, 'index'])->name('user.orders');
 });
     
 
@@ -132,12 +131,21 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
-    // Order Management
-    Route::resource('orders', OrderController::class);
 
 
     Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
     Route::post('/users/{user}/update-balance', [PortfolioController::class, 'updateBalance'])->name('users.update-balance');
+
+    // Orders Routes
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/data', [OrderController::class, 'data'])->name('orders.data'); // 👈 New route
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
+    Route::post('/orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+    Route::post('/orders/{order}/execute', [OrderController::class, 'execute'])->name('orders.execute');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy'); // 👈 New route
 
 });
 

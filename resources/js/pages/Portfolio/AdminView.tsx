@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 
 interface User {
     id: number;
@@ -50,6 +52,17 @@ interface BalanceFormData {
     type: 'deposit' | 'withdrawal';
 }
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Dashboard',
+        href: '/dashboard',
+    },
+    {
+        title: 'My Portfolio',
+        href: '/portfolio',
+    }
+];
+
 export default function AdminView({ auth, portfolios, users, companies, filters }: AdminViewProps) {
     const [showBalanceModal, setShowBalanceModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -60,12 +73,11 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
     });
 
     const formatCurrency = (amount: number | undefined | null): string => {
-        if (amount === undefined || amount === null) return '₨0';
-        return new Intl.NumberFormat('en-PK', {
+        if (amount === undefined || amount === null) return '0';
+        return new Intl.NumberFormat('en-RW', {
             style: 'currency',
-            currency: 'PKR',
+            currency: 'RWF',
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
         }).format(amount);
     };
 
@@ -76,7 +88,7 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
 
     const formatPercentage = (value: number | undefined | null): React.ReactNode => {
         if (value === undefined || value === null) return <span className="text-gray-500">0%</span>;
-        
+
         const color = value >= 0 ? 'text-green-600' : 'text-red-600';
         const sign = value >= 0 ? '+' : '';
         return (
@@ -118,7 +130,7 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
     const handleBalanceUpdate = (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedUser) return;
-        
+
         post(route('users.update-balance', selectedUser.id), {
             onSuccess: () => {
                 closeBalanceModal();
@@ -137,7 +149,7 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
     const calculatePnlPercentage = (item: PortfolioItem): number => {
         const totalPnl = calculateTotalPnl(item);
         const totalInvested = item.total_invested || 0;
-        
+
         if (totalInvested > 0) {
             return (totalPnl / totalInvested) * 100;
         }
@@ -150,7 +162,7 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
     const safeCompanies = companies || [];
 
     return (
-        <>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="All Portfolios - Admin" />
 
             <div className="min-h-screen bg-gray-50 py-8">
@@ -403,13 +415,12 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
                                                 key={index}
                                                 onClick={() => link.url && router.get(link.url)}
                                                 disabled={!link.url}
-                                                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                                    link.active
-                                                        ? 'bg-indigo-600 text-white shadow-sm'
-                                                        : link.url
+                                                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${link.active
+                                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                                    : link.url
                                                         ? 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                                                         : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                                                }`}
+                                                    }`}
                                                 dangerouslySetInnerHTML={{ __html: link.label }}
                                             />
                                         ))}
@@ -512,6 +523,6 @@ export default function AdminView({ auth, portfolios, users, companies, filters 
                     </div>
                 </div>
             )}
-        </>
+        </AppLayout>
     );
 }

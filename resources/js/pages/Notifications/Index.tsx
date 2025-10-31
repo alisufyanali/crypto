@@ -3,6 +3,7 @@ import AppLayout from "@/layouts/app-layout";
 import { Trash2, CheckCircle2 } from "lucide-react";
 import { route, Config } from "ziggy-js";
 import { Ziggy } from "@/ziggy";
+import { type BreadcrumbItem } from '@/types';
 
 interface Notification {
   id: number;
@@ -10,6 +11,17 @@ interface Notification {
   is_read: boolean;
   created_at: string;
 }
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
+    title: 'Notifications',
+    href: '/notifications',
+  }
+];
 
 export default function NotificationsIndex({ notifications, flash }: any) {
   const { post, delete: destroy } = useForm({});
@@ -25,7 +37,7 @@ const deleteNotification = (id: number) => {
 
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Notifications" />
       <div className="container mx-auto py-6">
         <h2 className="text-2xl font-semibold mb-4">All Notifications</h2>

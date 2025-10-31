@@ -1,5 +1,7 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 
 // Types
 interface Company {
@@ -50,13 +52,23 @@ interface PageProps {
     summary: Summary;
 }
 
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
+    title: 'My Portfolio',
+    href: '/portfolio',
+  }
+];
+
 export default function ClientView({ auth, portfolio, accountBalance, summary }: PageProps) {
-    const formatCurrency = (amount: number): string => {
-        return new Intl.NumberFormat('en-PK', {
-            style: 'currency',
-            currency: 'PKR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
+        const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-RW', {
+        style: 'currency',
+        currency: 'RWF',
+        minimumFractionDigits: 0,
         }).format(amount);
     };
 
@@ -79,7 +91,7 @@ export default function ClientView({ auth, portfolio, accountBalance, summary }:
     };
 
     return (
-        <>
+       <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="My Portfolio" />
 
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
@@ -306,7 +318,7 @@ export default function ClientView({ auth, portfolio, accountBalance, summary }:
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <div className="text-sm font-semibold text-gray-900 bg-gray-100 px-2 py-1 rounded inline-block">
-                                                            {item.quantity.toLocaleString()}
+                                                            {item.quantity?.toLocaleString() ?? 0}
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
@@ -361,6 +373,6 @@ export default function ClientView({ auth, portfolio, accountBalance, summary }:
                     </div>
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }
