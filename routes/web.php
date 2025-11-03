@@ -16,6 +16,8 @@ use App\Http\Controllers\Admin\KycController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PortfolioController;
+use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\AccountBalanceController;
 
 Route::get('/clear-cache', function () {
     try {
@@ -147,7 +149,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/orders/{order}/execute', [OrderController::class, 'execute'])->name('orders.execute');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy'); // 👈 New route
 
-});
+
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions-data', [TransactionController::class, 'getData'])->name('transactions.data');
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+
+    Route::resource('account-balances', AccountBalanceController::class);
+    Route::get('account-balances-data', [AccountBalanceController::class, 'getData'])
+        ->name('account-balances.data');
+
+}); 
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

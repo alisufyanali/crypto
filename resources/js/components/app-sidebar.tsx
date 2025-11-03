@@ -48,6 +48,8 @@ const rawNavItems = [
   { title: 'Contact Forms', href: '/admin/contacts', roles: ['admin', 'broker'] },
   { title: 'Notifications', href: '/notifications', roles: ['admin', 'broker', 'client'] },
   { title: 'Portfolio', href: '/portfolio', roles: ['admin', 'broker', 'client'] },
+  { title: 'Transactions', href: '/transactions', roles: ['admin', 'broker', 'client'] },
+  { title: 'Account Balances', href: '/account-balances', roles: ['admin', 'broker' ] },
 ];
 
 const mainNavItems: NavItem[] = rawNavItems.map((item) => {

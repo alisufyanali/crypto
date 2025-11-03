@@ -7,8 +7,8 @@ interface DataTableWrapperProps {
   fetchUrl: string;
   columns: any[];
   csvHeaders: any[];
-  createUrl: string;
-  createLabel: string;
+  createUrl?: string;   // Optional
+  createLabel?: string; // Optional
 }
 
 export default function DataTableWrapper({
@@ -79,14 +79,17 @@ export default function DataTableWrapper({
 
   return (
     <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-      <div className="flex justify-end mb-3">
-        <Link
-          href={createUrl}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700"
-        >
-          {createLabel}
-        </Link>
-      </div>
+      {/* Conditionally render create button */}
+      {createUrl && createLabel && (
+        <div className="flex justify-end mb-3">
+          <Link
+            href={createUrl}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700"
+          >
+            {createLabel}
+          </Link>
+        </div>
+      )}
 
       <div className="relative flex-1 m-5 p-5 overflow-hidden rounded-xl border border-sidebar-border/70 bg-white dark:bg-neutral-900 shadow-md">
         <DataTable
