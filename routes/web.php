@@ -146,7 +146,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
     Route::post('/orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
-    Route::post('/orders/{order}/execute', [OrderController::class, 'execute'])->name('orders.execute');
+    Route::get('/orders/{order}/execute', [OrderController::class, 'execute'])->name('orders.execute')->whereNumber('order');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy'); // 👈 New route
 
 

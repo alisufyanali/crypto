@@ -126,7 +126,7 @@ export default function CreateAccountBalance() {
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500">₨</span>
+                                                <span className="text-gray-500">RF</span>
                                             </div>
                                             <input
                                                 type="number"
@@ -162,24 +162,24 @@ export default function CreateAccountBalance() {
                                 <div className="grid grid-cols-2 gap-3 text-sm">
                                     <div className="text-blue-700">Total Assets:</div>
                                     <div className="text-right font-semibold text-blue-900">
-                                        ₨{(cashBalance + investedAmount).toLocaleString()}
+                                        RF{(cashBalance + investedAmount).toLocaleString()}
                                     </div>
                                     
                                     <div className="text-blue-700">Portfolio Value:</div>
                                     <div className="text-right font-semibold text-blue-900">
-                                        ₨{portfolioValue.toLocaleString()}
+                                        RF{portfolioValue.toLocaleString()}
                                     </div>
                                     
                                     <div className="text-blue-700">Profit & Loss:</div>
                                     <div className={`text-right font-semibold ${totalPnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        ₨{totalPnl.toLocaleString()}
+                                        RF{totalPnl.toLocaleString()}
                                     </div>
                                     
                                     <div className="text-blue-700">Net Worth:</div>
                                     <div className={`text-right font-semibold ${
                                         (cashBalance + portfolioValue) >= 0 ? 'text-green-600' : 'text-red-600'
                                     }`}>
-                                        ₨{(cashBalance + portfolioValue).toLocaleString()}
+                                        RF{(cashBalance + portfolioValue).toLocaleString()}
                                     </div>
                                 </div>
                             </div>

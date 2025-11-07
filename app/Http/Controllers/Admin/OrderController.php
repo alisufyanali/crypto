@@ -152,87 +152,88 @@ class OrderController extends Controller
         return redirect()->route('orders.index')
             ->with('success', 'Order submitted successfully and is pending approval.');
     }
+ 
     public function edit(Order $order)
-{
-    // Check if user owns the order or is admin
-    $user = auth()->user();
-    
-    if (!$user->isClient() || $order->user_id !== $user->id) {
-        abort(403, 'Unauthorized action.');
-    }
-    
-    // Only allow editing pending orders
-    if ($order->status !== 'pending') {
-        return redirect()->route('orders.show', $order)
-            ->with('error', 'Only pending orders can be edited.');
-    }
-    
-    $companies = Company::active()
-        ->with('currentStock')
-        ->orderBy('name')
-        ->get();
+    {
+        // Check if user owns the order or is admin
+        $user = auth()->user();
         
-    $userBalance = $user->accountBalance?->cash_balance ?? 0;
-    
-    return Inertia::render('Orders/Edit', [
-        'order' => $order->load('company'),
-        'companies' => $companies,
-        'userBalance' => $userBalance,
-    ]);
-}
-
-public function update(Request $request, Order $order)
-{
-    // Check if user owns the order or is admin
-    $user = auth()->user();
-    
-    if ($user->isClient() && $order->user_id !== $user->id) {
-        abort(403, 'Unauthorized action.');
-    }
-    
-    // Only allow updating pending orders
-    if ($order->status !== 'pending') {
-        return back()->with('error', 'Only pending orders can be updated.');
-    }
-    
-    $request->validate([
-        'company_id' => 'required|exists:companies,id',
-        'type' => 'required|in:buy,sell',
-        'quantity' => 'required|integer|min:1',
-        'price_per_share' => 'required|numeric|min:0.01',
-    ]);
-    
-    $totalAmount = $request->quantity * $request->price_per_share;
-    
-    // Validation based on order type
-    if ($request->type === 'buy') {
-        $userBalance = $user->accountBalance?->cash_balance ?? 0;
-        if ($totalAmount > $userBalance) {
-            return back()->withErrors(['quantity' => 'Insufficient balance for this purchase.']);
+        if (!$user->isClient() || $order->user_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
         }
-    } else {
-        $portfolio = Portfolio::where('user_id', $user->id)
-            ->where('company_id', $request->company_id)
-            ->first();
+        
+        // Only allow editing pending orders
+        if ($order->status !== 'pending') {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Only pending orders can be edited.');
+        }
+        
+        $companies = Company::active()
+            ->with('currentStock')
+            ->orderBy('name')
+            ->get();
             
-        if (!$portfolio || $portfolio->shares_owned < $request->quantity) {
-            return back()->withErrors(['quantity' => 'Insufficient shares to sell.']);
-        }
+        $userBalance = $user->accountBalance?->cash_balance ?? 0;
+        
+        return Inertia::render('Orders/Edit', [
+            'order' => $order->load('company'),
+            'companies' => $companies,
+            'userBalance' => $userBalance,
+        ]);
     }
-    
-    $company = Company::findOrFail($request->company_id);
-    
-    $order->update([
-        'company_id' => $request->company_id,
-        'type' => $request->type,
-        'quantity' => $request->quantity,
-        'price_per_share' => $request->price_per_share,
-        'total_amount' => $totalAmount,
-    ]);
-    
-    return redirect()->route('orders.show', $order)
-        ->with('success', 'Order updated successfully.');
-}
+
+    public function update(Request $request, Order $order)
+    {
+        // Check if user owns the order or is admin
+        $user = auth()->user();
+        
+        if ($user->isClient() && $order->user_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        // Only allow updating pending orders
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Only pending orders can be updated.');
+        }
+        
+        $request->validate([
+            'company_id' => 'required|exists:companies,id',
+            'type' => 'required|in:buy,sell',
+            'quantity' => 'required|integer|min:1',
+            'price_per_share' => 'required|numeric|min:0.01',
+        ]);
+        
+        $totalAmount = $request->quantity * $request->price_per_share;
+        
+        // Validation based on order type
+        if ($request->type === 'buy') {
+            $userBalance = $user->accountBalance?->cash_balance ?? 0;
+            if ($totalAmount > $userBalance) {
+                return back()->withErrors(['quantity' => 'Insufficient balance for this purchase.']);
+            }
+        } else {
+            $portfolio = Portfolio::where('user_id', $user->id)
+                ->where('company_id', $request->company_id)
+                ->first();
+                
+            if (!$portfolio || $portfolio->shares_owned < $request->quantity) {
+                return back()->withErrors(['quantity' => 'Insufficient shares to sell.']);
+            }
+        }
+        
+        $company = Company::findOrFail($request->company_id);
+        
+        $order->update([
+            'company_id' => $request->company_id,
+            'type' => $request->type,
+            'quantity' => $request->quantity,
+            'price_per_share' => $request->price_per_share,
+            'total_amount' => $totalAmount,
+        ]);
+        
+        return redirect()->route('orders.show', $order)
+            ->with('success', 'Order updated successfully.');
+    }
 
     
     public function show(Order $order)
@@ -291,11 +292,11 @@ public function update(Request $request, Order $order)
     
     public function execute(Order $order)
     {
-        if ($order->status !== 'approved') {
-            return back()->withErrors(['error' => 'Order must be approved before execution.']);
-        }
+        // if ($order->status !== 'approved') {
+        //     return back()->withErrors(['error' => 'Order must be approved before execution.']);
+        // }
         
-        DB::transaction(function () use ($order) {
+        // DB::transaction(function () use ($order) {
             $order->update([
                 'status' => 'executed',
                 'executed_by' => auth()->id(),
@@ -303,12 +304,13 @@ public function update(Request $request, Order $order)
             ]);
             
             $user = $order->user;
-            
+
             if ($order->type === 'buy') {
                 $this->processBuyOrder($order);
             } else {
                 $this->processSellOrder($order);
             }
+            return 1;
             
             Transaction::create([
                 'user_id' => $order->user_id,
@@ -331,7 +333,7 @@ public function update(Request $request, Order $order)
                 'order',
                 'Order Executed'
             );
-        });
+        // });
         
         return back()->with('success', 'Order executed successfully.');
     }
@@ -379,27 +381,41 @@ public function update(Request $request, Order $order)
     }
     
     private function processSellOrder(Order $order)
-    {
-        $user = $order->user;
-        
-        $portfolio = Portfolio::where('user_id', $user->id)
-            ->where('company_id', $order->company_id)
-            ->firstOrFail();
-            
-        $saleValue = $order->total_amount;
-        $costBasis = $portfolio->average_cost * $order->quantity;
-        $realizedPnl = $saleValue - $costBasis;
-        
-        $portfolio->update([
-            'shares_owned' => $portfolio->shares_owned - $order->quantity,
-            'total_invested' => $portfolio->total_invested - $costBasis,
-            'realized_pnl' => $portfolio->realized_pnl + $realizedPnl,
-        ]);
-        
-        $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
-        $balance->increment('cash_balance', $saleValue);
-        
+{
+    $user = $order->user;
+
+    $portfolio = Portfolio::where('user_id', $user->id)
+        ->where('company_id', $order->company_id)
+        ->first();
+
+    if (!$portfolio) {
+        throw new \Exception("No portfolio found for this company.");
+    }
+
+    if ($portfolio->shares_owned < $order->quantity) {
+        throw new \Exception("Not enough shares to sell.");
+    }
+
+    $saleValue = $order->total_amount;
+    $costBasis = $portfolio->average_cost * $order->quantity;
+    $realizedPnl = $saleValue - $costBasis;
+
+    $portfolio->update([
+        'shares_owned' => $portfolio->shares_owned - $order->quantity,
+        'total_invested' => $portfolio->total_invested - $costBasis,
+        'realized_pnl' => $portfolio->realized_pnl + $realizedPnl,
+    ]);
+
+    $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
+    $balance->increment('cash_balance', $saleValue);
+
+    if (method_exists($portfolio, 'updateCurrentValue')) {
         $portfolio->updateCurrentValue();
+    }
+
+    if (method_exists($balance, 'updateFromPortfolio')) {
         $balance->updateFromPortfolio();
     }
+}
+
 }

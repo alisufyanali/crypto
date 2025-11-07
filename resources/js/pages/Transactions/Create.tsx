@@ -98,7 +98,7 @@ export default function TransactionShow({ transaction }: Props) {
               <div className="text-right">
                 <div className="text-sm text-blue-100 mb-1">Amount</div>
                 <div className="text-3xl font-bold">
-                  ${parseFloat(transaction.amount).toFixed(2)}
+                  RF {parseFloat(transaction.amount).toFixed(2)}
                 </div>
               </div>
             </div>
@@ -173,7 +173,7 @@ export default function TransactionShow({ transaction }: Props) {
                     </div>
                     <div>
                       <span className="text-sm text-gray-600">Price per share:</span>
-                      <p className="font-medium">${parseFloat(transaction.order.price).toFixed(2)}</p>
+                      <p className="font-medium">RF {parseFloat(transaction.order.price).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -229,7 +229,7 @@ export default function TransactionShow({ transaction }: Props) {
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      ${parseFloat(transaction.amount).toFixed(2)}
+                      RF {parseFloat(transaction.amount).toFixed(2)}
                     </p>
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export default function TransactionShow({ transaction }: Props) {
                   <div className="text-right">
                     <p className="text-sm text-gray-600">Total Value</p>
                     <p className="text-xl font-semibold text-gray-900">
-                      {transaction.order.quantity} × ${parseFloat(transaction.order.price).toFixed(2)}
+                      {transaction.order.quantity} × RF {parseFloat(transaction.order.price).toFixed(2)}
                     </p>
                   </div>
                 )}

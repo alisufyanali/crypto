@@ -134,7 +134,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
 
   const formatPercentage = (percentage: any) => {
     const num = Number(percentage) || 0;
-    return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
+    return `RF {num >= 0 ? '+' : ''}RF {num.toFixed(2)}%`;
   };
 
   const handleApproveOrder = (orderId: number) => {
@@ -389,7 +389,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">Payment Records</h2>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">$190,090.36</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">RF 190,090.36</p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button className="text-sm text-gray-500 hover:text-gray-700">...</button>
@@ -417,11 +417,11 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="grid grid-cols-4 gap-3 mt-6">
                 <div className="bg-blue-600 rounded-lg p-3 text-white">
                   <div className="text-xs opacity-80">This Month</div>
-                  <div className="text-lg font-semibold">$1,342</div>
+                  <div className="text-lg font-semibold">RF 1,342</div>
                 </div>
                 <div className="bg-cyan-500 rounded-lg p-3 text-white">
                   <div className="text-xs opacity-80">Last Month</div>
-                  <div className="text-lg font-semibold">$1,342</div>
+                  <div className="text-lg font-semibold">RF 1,342</div>
                 </div>
                 <div className="bg-purple-500 rounded-lg p-3 text-white">
                   <div className="text-xs opacity-80">This Year</div>
@@ -429,7 +429,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                 </div>
                 <div className="bg-pink-500 rounded-lg p-3 text-white">
                   <div className="text-xs opacity-80">Last Year</div>
-                  <div className="text-lg font-semibold">$13</div>
+                  <div className="text-lg font-semibold">RF 13</div>
                 </div>
               </div>
             </div>
@@ -444,7 +444,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                   <p className="text-sm text-gray-500">September 2025</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">$30,567</p>
+                  <p className="text-2xl font-bold text-gray-900">RF 30,567</p>
                 </div>
               </div>
             </div>
@@ -477,7 +477,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                           {stock.current_stock ? formatCurrency(stock.current_stock.current_price) : 'N/A'}
                         </div>
                         {stock.current_stock && (
-                          <div className={`text-sm flex items-center justify-end ${stock.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
+                          <div className={`text-sm flex items-center justify-end RF {stock.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
                             }`}>
                             {stock.current_stock.change_amount >= 0 ? (
                               <ArrowUpRight className="w-3 h-3 mr-1" />
@@ -591,7 +591,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="flex items-center mb-2">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.type === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium RF {order.type === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                 }`}>
 
                               </span>
@@ -627,7 +627,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <Link
-                              href={`/orders/${order.id}`}
+                              href={`/orders/RF {order.id}`}
                               className="text-blue-600 hover:text-blue-900 p-1"
                               title="View Details"
                             >

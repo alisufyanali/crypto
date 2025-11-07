@@ -53,7 +53,7 @@ export default function TransactionList() {
     },
     {
       name: "Amount",
-      selector: (row: any) => `$${parseFloat(row.amount).toFixed(2)}`,
+      selector: (row: any) => `${parseFloat(row.amount).toFixed(2)}`,
       sortable: true,
       right: true,
       width: "120px"
@@ -131,13 +131,13 @@ export default function TransactionList() {
         <div className="p-4 border-b">
           <h2 className="text-xl font-semibold">All Transactions</h2>
         </div>
-        
+
         <DataTableWrapper
           fetchUrl="/transactions-data"
           columns={columns}
           csvHeaders={csvHeaders}
-          createUrl={null}
-          createLabel=""
+          createUrl={undefined}
+          createLabel={undefined}
         />
       </div>
     </AppLayout>

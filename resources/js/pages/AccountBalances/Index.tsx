@@ -15,10 +15,10 @@ export default function AccountBalancesList() {
     const columns = [
         { name: "ID", selector: (row: any) => row.id, sortable: true, width: "70px" },
         { name: "User", selector: (row: any) => row.user?.name || "N/A", sortable: true },
-        { name: "Cash Balance", selector: (row: any) => `$${Number(row.cash_balance).toFixed(2)}`, sortable: true },
-        { name: "Invested Amount", selector: (row: any) => `$${Number(row.invested_amount).toFixed(2)}`, sortable: true },
-        { name: "Portfolio Value", selector: (row: any) => `$${Number(row.total_portfolio_value).toFixed(2)}`, sortable: true },
-        { name: "Total P&L", selector: (row: any) => `$${Number(row.total_pnl).toFixed(2)}`, sortable: true },
+        { name: "Cash Balance", selector: (row: any) => `RF ${Number(row.cash_balance).toFixed(2)}`, sortable: true },
+        { name: "Invested Amount", selector: (row: any) => `RF ${Number(row.invested_amount).toFixed(2)}`, sortable: true },
+        { name: "Portfolio Value", selector: (row: any) => `RF ${Number(row.total_portfolio_value).toFixed(2)}`, sortable: true },
+        { name: "Total P&L", selector: (row: any) => `RF ${Number(row.total_pnl).toFixed(2)}`, sortable: true },
 
 
         {
