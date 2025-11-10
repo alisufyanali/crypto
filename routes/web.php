@@ -40,19 +40,36 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::resource('blogs', BlogController::class);
-
-// ✅ AUTH REQUIRED ROUTES
-// Route::middleware('auth')->group(function () {
-//     Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
-//     Route::post('/kyc/upload', [KycController::class, 'store'])->name('kyc.store');
-// });
 
 // ✅ USER-SPECIFIC ROUTES (with KYC middleware)
 Route::middleware(['auth', 'kyc'])->group(function () {
-      Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
+
+    Route::get('/kyc/upload', [KycController::class, 'showUploadForm'])->name('kyc.upload');
     Route::post('/kyc/upload', [KycController::class, 'store'])->name('kyc.store');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('user.dashboard');
+
+    // Orders Routes
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/data', [OrderController::class, 'data'])->name('orders.data'); // 👈 New route
+    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
+    Route::post('/orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+    Route::post('/orders/{order}/execute', [OrderController::class, 'execute'])->name('orders.execute')->whereNumber('order');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy'); // 👈 New route
+
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions-data', [TransactionController::class, 'getData'])->name('transactions.data');
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+
+    Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+    Route::post('/users/{user}/update-balance', [PortfolioController::class, 'updateBalance'])->name('users.update-balance');
+
+    Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+    Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+    
 });
     
 
@@ -77,9 +94,6 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     Route::post('/kyc/{document}/reject', [KycController::class, 'reject'])->name('kyc.reject');
     Route::post('/kyc/{doc}/reset', [KycController::class, 'reset'])->name('kyc.reset');
     Route::post('/clients/{client}/update-kyc', [ClientController::class, 'updateKycStatus'])->name('clients.updateKyc');
-
-
-
     
     // Stock Management
     Route::resource('stocks', StockController::class);
@@ -101,13 +115,10 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     Route::get('/api/market/summary', [StockController::class, 'marketSummary'])
         ->name('market.summary');
 
-
         
     Route::get('/admin/contacts', [ContactController::class, 'admin'])->name('admin.contacts');
     Route::patch('/admin/contacts/{contact}/read', [ContactController::class, 'markAsRead'])->name('admin.contacts.read');
     Route::delete('/admin/contacts/{contact}', [ContactController::class, 'destroy'])->name('admin.contacts.destroy');
-
-
 
     // ====== AUDIT MODULES ======
     // Audit Log
@@ -118,11 +129,12 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     });
 
 
-
 });
 
 
 Route::middleware(['auth'])->group(function () {
+    Route::resource('blogs', BlogController::class);
+    
     // Notification routes
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
@@ -134,26 +146,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
 
-
-    Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
-    Route::post('/users/{user}/update-balance', [PortfolioController::class, 'updateBalance'])->name('users.update-balance');
-
-    // Orders Routes
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/data', [OrderController::class, 'data'])->name('orders.data'); // 👈 New route
-    Route::get('/orders/create', [OrderController::class, 'create'])->name('orders.create');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-    Route::post('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
-    Route::post('/orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
-    Route::get('/orders/{order}/execute', [OrderController::class, 'execute'])->name('orders.execute')->whereNumber('order');
-    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy'); // 👈 New route
-
-
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions-data', [TransactionController::class, 'getData'])->name('transactions.data');
-    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
-    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
     Route::resource('account-balances', AccountBalanceController::class);
     Route::get('account-balances-data', [AccountBalanceController::class, 'getData'])

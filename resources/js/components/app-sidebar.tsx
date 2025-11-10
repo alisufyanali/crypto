@@ -39,7 +39,7 @@ const iconMap: Record<string, any> = {
 const rawNavItems = [
   { title: 'Dashboard', href: '/admin/dashboard', roles: ['admin'] },
   { title: 'Dashboard', href: '/dashboard', roles: ['client'] },
-  { title: 'Company', href: '/companies', roles: ['admin', 'broker'] },
+  { title: 'Company', href: '/companies', roles: ['admin', 'broker', 'client'] },
   { title: 'Stocks', href: '/stocks', roles: ['admin', 'broker'] },
   { title: 'Client', href: '/clients', roles: ['admin', 'broker'] },
   { title: 'Users', href: '/users', roles: ['admin', 'broker'] },

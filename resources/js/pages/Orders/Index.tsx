@@ -29,6 +29,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [rejectNotes, setRejectNotes] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0); // Add this for forcing refresh
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-RW', {
@@ -45,6 +46,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         setShowApproveModal(false);
         setSelectedOrder(null);
         setProcessing(false);
+        setRefreshKey(prev => prev + 1); // Force refresh
       },
       onError: () => {
         setProcessing(false);
@@ -65,6 +67,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         setSelectedOrder(null);
         setRejectNotes("");
         setProcessing(false);
+        setRefreshKey(prev => prev + 1); // Force refresh
       },
       onError: () => {
         setProcessing(false);
@@ -79,6 +82,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         setShowExecuteModal(false);
         setSelectedOrder(null);
         setProcessing(false);
+        setRefreshKey(prev => prev + 1); // Force refresh
       },
       onError: () => {
         setProcessing(false);
@@ -337,6 +341,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
       <Head title="Orders" />
 
       <DataTableWrapper
+        key={refreshKey} // Add this key prop
         fetchUrl="/orders/data"
         columns={columns}
         csvHeaders={csvHeaders}

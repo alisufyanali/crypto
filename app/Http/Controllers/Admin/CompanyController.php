@@ -14,9 +14,11 @@ use Yajra\DataTables\Facades\DataTables;
 class CompanyController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Companies/Index' );
+        return Inertia::render('Companies/Index', [
+            'userRole' => $request->user()->role,
+        ]);
     }
 
     

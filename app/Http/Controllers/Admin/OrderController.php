@@ -292,26 +292,54 @@ class OrderController extends Controller
     
     public function execute(Order $order)
     {
-        // if ($order->status !== 'approved') {
-        //     return back()->withErrors(['error' => 'Order must be approved before execution.']);
-        // }
-        
-        // DB::transaction(function () use ($order) {
+        // Only allow execution of approved orders (adjust if your flow differs)
+        if ($order->status !== 'approved') {
+            return back()->withErrors(['error' => 'Order must be approved before execution.']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $user = $order->user;
+
+            // Re-check preconditions to avoid race conditions
+            if ($order->type === 'sell') {
+                $portfolio = Portfolio::where('user_id', $order->user_id)
+                    ->where('company_id', $order->company_id)
+                    ->first();
+
+                if (!$portfolio) {
+                    DB::rollBack();
+                    return back()->withErrors(['error' => "User does not own any shares of {$order->company->name}."]);
+                }
+
+                if ($portfolio->shares_owned < $order->quantity) {
+                    DB::rollBack();
+                    return back()->withErrors(['error' => "User does not have enough shares to sell."]);
+                }
+            } else { // buy
+                $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
+                if ($balance->cash_balance < $order->total_amount) {
+                    DB::rollBack();
+                    return back()->withErrors(['error' => 'Insufficient funds to execute buy order.']);
+                }
+            }
+
+            // Mark order executed (timestamp + executor)
             $order->update([
                 'status' => 'executed',
                 'executed_by' => auth()->id(),
                 'executed_at' => now(),
             ]);
-            
-            $user = $order->user;
 
+            // Perform business logic
             if ($order->type === 'buy') {
                 $this->processBuyOrder($order);
             } else {
                 $this->processSellOrder($order);
             }
-            return 1;
-            
+
+            // Create transaction record (metadata stored as array if casted in model)
             Transaction::create([
                 'user_id' => $order->user_id,
                 'order_id' => $order->id,
@@ -333,10 +361,26 @@ class OrderController extends Controller
                 'order',
                 'Order Executed'
             );
-        // });
-        
-        return back()->with('success', 'Order executed successfully.');
+
+            DB::commit();
+
+            return back()->with('success', 'Order executed successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            // Log full error for debugging
+            Log::error('Order execution failed', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Friendly message to user (avoid exposing internal trace in production)
+            return back()->withErrors(['error' => 'Failed to execute order. '.$e->getMessage()]);
+        }
     }
+
 
     public function destroy(Order $order)
     {
@@ -357,65 +401,83 @@ class OrderController extends Controller
     private function processBuyOrder(Order $order)
     {
         $user = $order->user;
-        
+
+        // 🔹 Ensure balance exists
         $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
+
+        // 🔹 Check sufficient funds before decrement
+        if ($balance->cash_balance < $order->total_amount) {
+            throw new \Exception("Insufficient funds to buy shares.");
+        }
+
+        // 🔹 Deduct purchase amount
         $balance->decrement('cash_balance', $order->total_amount);
-        
+
+        // 🔹 Find or create portfolio for this company
         $portfolio = Portfolio::firstOrCreate(
             ['user_id' => $user->id, 'company_id' => $order->company_id],
             ['shares_owned' => 0, 'average_cost' => 0, 'total_invested' => 0]
         );
-        
+
+        // 🔹 Recalculate averages
         $newTotalShares = $portfolio->shares_owned + $order->quantity;
         $newTotalInvested = $portfolio->total_invested + $order->total_amount;
-        $newAverageCost = $newTotalInvested / $newTotalShares;
-        
+        $newAverageCost = round($newTotalInvested / $newTotalShares, 2);
+
+        // 🔹 Update portfolio
         $portfolio->update([
             'shares_owned' => $newTotalShares,
             'total_invested' => $newTotalInvested,
             'average_cost' => $newAverageCost,
         ]);
-        
+
+        // 🔹 Sync current value & overall balance
         $portfolio->updateCurrentValue();
         $balance->updateFromPortfolio();
     }
     
     private function processSellOrder(Order $order)
-{
-    $user = $order->user;
+    {
+        $user = $order->user;
 
-    $portfolio = Portfolio::where('user_id', $user->id)
-        ->where('company_id', $order->company_id)
-        ->first();
+        // 🔹 Find portfolio
+        $portfolio = Portfolio::where('user_id', $user->id)
+            ->where('company_id', $order->company_id)
+            ->first();
 
-    if (!$portfolio) {
-        throw new \Exception("No portfolio found for this company.");
+        if (!$portfolio) {
+            throw new \Exception("You don't own any shares of {$order->company->name}.");
+        }
+
+        // 🔹 Ensure user owns enough shares
+        if ($portfolio->shares_owned < $order->quantity) {
+            throw new \Exception("Not enough shares to sell.");
+        }
+
+        // 🔹 Calculate sale value & profit/loss
+        $saleValue = $order->total_amount;
+        $costBasis = $portfolio->average_cost * $order->quantity;
+        $realizedPnl = $saleValue - $costBasis;
+
+        // 🔹 Update portfolio
+        $portfolio->update([
+            'shares_owned' => $portfolio->shares_owned - $order->quantity,
+            'total_invested' => max(0, $portfolio->total_invested - $costBasis),
+            'realized_pnl' => $portfolio->realized_pnl + $realizedPnl,
+        ]);
+
+        // 🔹 Add sale value to cash
+        $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
+        $balance->increment('cash_balance', $saleValue);
+
+        // 🔹 Update portfolio valuation and balance summary
+        if (method_exists($portfolio, 'updateCurrentValue')) {
+            $portfolio->updateCurrentValue();
+        }
+
+        if (method_exists($balance, 'updateFromPortfolio')) {
+            $balance->updateFromPortfolio();
+        }
     }
-
-    if ($portfolio->shares_owned < $order->quantity) {
-        throw new \Exception("Not enough shares to sell.");
-    }
-
-    $saleValue = $order->total_amount;
-    $costBasis = $portfolio->average_cost * $order->quantity;
-    $realizedPnl = $saleValue - $costBasis;
-
-    $portfolio->update([
-        'shares_owned' => $portfolio->shares_owned - $order->quantity,
-        'total_invested' => $portfolio->total_invested - $costBasis,
-        'realized_pnl' => $portfolio->realized_pnl + $realizedPnl,
-    ]);
-
-    $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
-    $balance->increment('cash_balance', $saleValue);
-
-    if (method_exists($portfolio, 'updateCurrentValue')) {
-        $portfolio->updateCurrentValue();
-    }
-
-    if (method_exists($balance, 'updateFromPortfolio')) {
-        $balance->updateFromPortfolio();
-    }
-}
 
 }
