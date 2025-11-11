@@ -18,48 +18,6 @@ import {
 } from 'lucide-react';
 import * as Chart from 'chart.js';
 
-// Mock data for demonstration
-const mockStats = {
-  todayOrders: 13,
-  totalClients: 22,
-  pendingKyc: 13,
-  pendingOrdersCount: 22
-};
-
-const mockTopStocks = [
-  {
-    id: 1,
-    name: "Bank of Kigali",
-    symbol: "BK",
-    current_stock: {
-      current_price: 245000,
-      change_amount: 12000,
-      change_percentage: 5.15
-    }
-  },
-  {
-    id: 2,
-    name: "MTN Rwanda",
-    symbol: "MTN",
-    current_stock: {
-      current_price: 180000,
-      change_amount: -8000,
-      change_percentage: -4.26
-    }
-  },
-  {
-    id: 3,
-    name: "Equity Bank",
-    symbol: "EQT",
-    current_stock: {
-      current_price: 320000,
-      change_amount: 15000,
-      change_percentage: 4.92
-    }
-  }
-]; 
-
- 
 interface Order {
   id: number;
   order_number: string;
@@ -99,14 +57,11 @@ interface Stock {
   } | null;
 }
 
-
 interface Props {
   pendingOrders: Order[];
   stats: Stats;
   topStocks: Stock[];
 }
-
-
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -134,28 +89,58 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
 
   const formatPercentage = (percentage: any) => {
     const num = Number(percentage) || 0;
-    return `RF {num >= 0 ? '+' : ''}RF {num.toFixed(2)}%`;
+    return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
   };
 
   const handleApproveOrder = (orderId: number) => {
     setProcessingOrder(orderId);
-    // Simulate API call
-    setTimeout(() => setProcessingOrder(null), 1000);
+    router.post(
+      `/orders/${orderId}/approve`,
+      {},
+      {
+        onSuccess: () => {
+          setProcessingOrder(null);
+        },
+        onError: () => {
+          setProcessingOrder(null);
+        },
+      }
+    );
   };
 
   const handleRejectOrder = (orderId: number) => {
     if (!rejectNotes.trim()) return;
     setProcessingOrder(orderId);
-    setTimeout(() => {
-      setProcessingOrder(null);
-      setShowRejectModal(null);
-      setRejectNotes('');
-    }, 1000);
+    router.post(
+      `/orders/${orderId}/reject`,
+      { notes: rejectNotes },
+      {
+        onSuccess: () => {
+          setProcessingOrder(null);
+          setShowRejectModal(null);
+          setRejectNotes('');
+        },
+        onError: () => {
+          setProcessingOrder(null);
+        },
+      }
+    );
   };
 
-  // Chart initialization
+  // Chart initialization with dark mode support
   useEffect(() => {
     Chart.Chart.register(...Chart.registerables);
+
+    // Common colors for light and dark mode
+    const getChartColors = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      return {
+        textColor: isDark ? '#9CA3AF' : '#6B7280',
+        gridColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+        tooltipBg: isDark ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+        tooltipText: isDark ? '#1F2937' : '#FFFFFF',
+      };
+    };
 
     // Area Chart for Revenue vs Expenses
     if (chartRef.current) {
@@ -165,6 +150,8 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
           chartInstance.current.destroy();
         }
 
+        const colors = getChartColors();
+        
         chartInstance.current = new Chart.Chart(ctx, {
           type: 'line',
           data: {
@@ -204,9 +191,9 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               tooltip: {
                 mode: 'index',
                 intersect: false,
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleColor: '#fff',
-                bodyColor: '#fff',
+                backgroundColor: colors.tooltipBg,
+                titleColor: colors.tooltipText,
+                bodyColor: colors.tooltipText,
                 borderColor: 'rgba(255, 255, 255, 0.1)',
                 borderWidth: 1,
               }
@@ -218,16 +205,16 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                   display: false,
                 },
                 ticks: {
-                  color: '#6B7280'
+                  color: colors.textColor
                 }
               },
               y: {
                 display: true,
                 grid: {
-                  color: 'rgba(0, 0, 0, 0.05)',
+                  color: colors.gridColor,
                 },
                 ticks: {
-                  color: '#6B7280'
+                  color: colors.textColor
                 }
               }
             },
@@ -248,6 +235,8 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
         if (barChartInstance.current) {
           barChartInstance.current.destroy();
         }
+
+        const colors = getChartColors();
 
         barChartInstance.current = new Chart.Chart(ctx, {
           type: 'bar',
@@ -277,9 +266,9 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                 display: false,
               },
               tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleColor: '#fff',
-                bodyColor: '#fff',
+                backgroundColor: colors.tooltipBg,
+                titleColor: colors.tooltipText,
+                bodyColor: colors.tooltipText,
               }
             },
             scales: {
@@ -289,16 +278,16 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                   display: false,
                 },
                 ticks: {
-                  color: '#6B7280'
+                  color: colors.textColor
                 }
               },
               y: {
                 display: true,
                 grid: {
-                  color: 'rgba(0, 0, 0, 0.05)',
+                  color: colors.gridColor,
                 },
                 ticks: {
-                  color: '#6B7280'
+                  color: colors.textColor
                 }
               }
             }
@@ -323,7 +312,8 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
       <div className="m-5">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-gray-600 mt-2">Monitor and manage your trading operations</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Broker Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Monitor and manage your trading operations</p>
         </div>
 
         {/* Stats Cards */}
@@ -335,10 +325,9 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5" />
               </div>
-              <span className="text-sm font-medium">+2.34%</span>
             </div>
             <h3 className="text-sm font-medium opacity-90">Today's Orders</h3>
-            <p className="text-3xl font-bold">{mockStats.todayOrders}/22</p>
+            <p className="text-3xl font-bold">{stats.todayOrders}</p>
           </div>
 
           {/* Total Clients */}
@@ -348,10 +337,9 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5" />
               </div>
-              <span className="text-sm font-medium">+2.34%</span>
             </div>
             <h3 className="text-sm font-medium opacity-90">Total Clients</h3>
-            <p className="text-3xl font-bold">{mockStats.totalClients}/22</p>
+            <p className="text-3xl font-bold">{stats.totalClients}</p>
           </div>
 
           {/* Pending KYC */}
@@ -361,10 +349,9 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5" />
               </div>
-              <span className="text-sm font-medium">-2.34%</span>
             </div>
             <h3 className="text-sm font-medium opacity-90">Pending KYC</h3>
-            <p className="text-3xl font-bold">{mockStats.pendingKyc}/22</p>
+            <p className="text-3xl font-bold">{stats.pendingKyc}</p>
           </div>
 
           {/* Pending Orders */}
@@ -374,25 +361,21 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                 <Clock className="w-5 h-5" />
               </div>
-              <span className="text-sm font-medium">+2.34%</span>
             </div>
             <h3 className="text-sm font-medium opacity-90">Pending Orders</h3>
-            <p className="text-3xl font-bold">{mockStats.pendingOrdersCount}/22</p>
+            <p className="text-3xl font-bold">{stats.pendingOrdersCount}</p>
           </div>
         </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Revenue Chart */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Payment Records</h2>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">RF 190,090.36</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button className="text-sm text-gray-500 hover:text-gray-700">...</button>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Payment Records</h2>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">RF 190,090.36</p>
                 </div>
               </div>
             </div>
@@ -405,11 +388,11 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="flex items-center justify-center space-x-8 mt-4">
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span className="text-sm text-gray-600">Revenue</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Revenue</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-                  <span className="text-sm text-gray-600">Expenses</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Expenses</span>
                 </div>
               </div>
 
@@ -436,15 +419,15 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
           </div>
 
           {/* Sales Chart */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-900">Total Sales</h2>
-                  <p className="text-sm text-gray-500">September 2025</p>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Total Sales</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">September 2025</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">RF 30,567</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">RF 30,567</p>
                 </div>
               </div>
             </div>
@@ -457,28 +440,27 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
         </div>
 
         {/* Stock Overview & Quick Actions */}
-        <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Stock Overview */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Stock Overview</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Stock Overview</h2>
             </div>
             <div className="p-6">
-              {mockTopStocks.length > 0 ? (
+              {topStocks && topStocks.length > 0 ? (
                 <div className="space-y-4">
-                  {mockTopStocks.map((stock) => (
-                    <div key={stock.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  {topStocks.map((stock) => (
+                    <div key={stock.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                       <div>
-                        <div className="font-semibold text-gray-900">{stock.symbol}</div>
-                        <div className="text-sm text-gray-500">{stock.name}</div>
+                        <div className="font-semibold text-gray-900 dark:text-white">{stock.symbol}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{stock.name}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-gray-900 dark:text-white">
                           {stock.current_stock ? formatCurrency(stock.current_stock.current_price) : 'N/A'}
                         </div>
                         {stock.current_stock && (
-                          <div className={`text-sm flex items-center justify-end RF {stock.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
-                            }`}>
+                          <div className={`text-sm flex items-center justify-end ${stock.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {stock.current_stock.change_amount >= 0 ? (
                               <ArrowUpRight className="w-3 h-3 mr-1" />
                             ) : (
@@ -494,190 +476,175 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               ) : (
                 <div className="text-center py-8">
                   <BarChart3 className="mx-auto h-8 w-8 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-500">No stock data available</p>
+                  <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No stock data available</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Quick Actions</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Quick Actions</h2>
             </div>
-            {/* Quick Actions */}
-            <div className="bg-white rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Quick Actions</h2>
-              </div>
+            <div className="p-6 space-y-3">
+              <Link
+                href="/orders?status=pending"
+                className="block w-full bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 text-center py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Review Pending Orders ({stats.pendingOrdersCount})
+              </Link>
 
-              <div className="p-6 space-y-3">
-                <Link
-                  href="/orders?status=pending"
-                  className="block w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-center py-3 px-4 rounded-lg font-medium transition-colors"
-                >
-                  Review Pending Orders ({stats.pendingOrdersCount})
-                </Link>
+              <Link
+                href="/clients?kyc_status=pending"
+                className="block w-full bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-800 dark:text-orange-300 text-center py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Review KYC Documents ({stats.pendingKyc})
+              </Link>
 
-                <Link
-                  href="/clients?kyc_status=pending"
-                  className="block w-full bg-orange-100 hover:bg-orange-200 text-orange-800 text-center py-3 px-4 rounded-lg font-medium transition-colors"
-                >
-                  Review KYC Documents ({stats.pendingKyc})
-                </Link>
+              <Link
+                href="/company/create"
+                className="block w-full bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-center py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Add New Company
+              </Link>
 
-                <Link
-                  href="/company/create"
-                  className="block w-full bg-blue-100 hover:bg-blue-200 text-blue-800 text-center py-3 px-4 rounded-lg font-medium transition-colors"
-                >
-                  Add New Company
-                </Link>
-
-                <Link
-                  href="/reports"
-                  className="block w-full bg-purple-100 hover:bg-purple-200 text-purple-800 text-center py-3 px-4 rounded-lg font-medium transition-colors"
-                >
-                  Generate Reports
-                </Link>
-              </div>
+              <Link
+                href="/reports"
+                className="block w-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-center py-3 px-4 rounded-lg font-medium transition-colors"
+              >
+                Generate Reports
+              </Link>
             </div>
-
           </div>
-
-
-
-
         </div>
 
-        <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-900">Pending Orders</h2>
-                <Link
-                  href="/orders"
-                  className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-                >
-                  View All Orders
-                </Link>
-              </div>
+        {/* Pending Orders Table */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Pending Orders</h2>
+              <Link
+                href="/orders"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium"
+              >
+                View All Orders
+              </Link>
             </div>
+          </div>
 
-            <div className="overflow-x-auto">
-              {pendingOrders.length > 0 ? (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Order Details
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Client
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Time
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
+          <div className="overflow-x-auto">
+            {pendingOrders && pendingOrders.length > 0 ? (
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Order Details
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Client
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Time
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {pendingOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${order.type === 'buy' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'}`}>
+                              {order.type.toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {order.company.name} ({order.company.symbol})
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {order.quantity.toLocaleString()} shares @ {formatCurrency(order.price_per_share)}
+                          </div>
+                          <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                            #{order.order_number}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{order.user.name}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{order.user.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          {formatCurrency(order.total_amount)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(order.created_at).toLocaleString('en-RW', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <Link
+                            href={`/orders/${order.id}`}
+                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleApproveOrder(order.id)}
+                            disabled={processingOrder === order.id}
+                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 disabled:opacity-50 p-1"
+                            title="Approve Order"
+                          >
+                            {processingOrder === order.id ? (
+                              <div className="w-4 h-4 border-2 border-green-600 dark:border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <CheckCircle className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setShowRejectModal(order.id)}
+                            disabled={processingOrder === order.id}
+                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 disabled:opacity-50 p-1"
+                            title="Reject Order"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {pendingOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="flex items-center mb-2">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium RF {order.type === 'buy' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                }`}>
-
-                              </span>
-                            </div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {order.company.name} ({order.company.symbol})
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {order.quantity.toLocaleString()} shares @ {formatCurrency(order.price_per_share)}
-                            </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                              #{order.order_number}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{order.user.name}</div>
-                          <div className="text-sm text-gray-500">{order.user.email}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {formatCurrency(order.total_amount)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(order.created_at).toLocaleString('en-RW', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <Link
-                              href={`/orders/RF {order.id}`}
-                              className="text-blue-600 hover:text-blue-900 p-1"
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Link>
-                            <button
-                              onClick={() => handleApproveOrder(order.id)}
-                              disabled={processingOrder === order.id}
-                              className="text-green-600 hover:text-green-900 disabled:opacity-50 p-1"
-                              title="Approve Order"
-                            >
-                              {processingOrder === order.id ? (
-                                <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <CheckCircle className="w-4 h-4" />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => setShowRejectModal(order.id)}
-                              disabled={processingOrder === order.id}
-                              className="text-red-600 hover:text-red-900 disabled:opacity-50 p-1"
-                              title="Reject Order"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="text-center py-12">
-                  <Clock className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No pending orders</h3>
-                  <p className="mt-1 text-sm text-gray-500">All orders have been processed.</p>
-                </div>
-              )}
-            </div>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-12">
+                <Clock className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No pending orders</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">All orders have been processed.</p>
+              </div>
+            )}
           </div>
         </div>
-
 
         {/* Reject Modal */}
         {showRejectModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Order</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reject Order</h3>
               <textarea
-                className="w-full p-3 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 rows={4}
                 placeholder="Enter rejection reason..."
                 value={rejectNotes}
@@ -686,7 +653,7 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               <div className="flex space-x-3 mt-4">
                 <button
                   onClick={() => setShowRejectModal(null)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>

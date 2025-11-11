@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\AccountBalanceController;
+use App\Http\Controllers\Admin\BackupController;
+
 
 Route::get('/clear-cache', function () {
     try {
@@ -70,6 +72,9 @@ Route::middleware(['auth', 'kyc'])->group(function () {
     Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
     Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
     
+    // Company Management
+    Route::resource('companies', CompanyController::class);
+    Route::get('/companies-data', [CompanyController::class, 'getData'])->name('companies.data');
 });
     
 
@@ -107,9 +112,6 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
     Route::get('/stocks/export', [StockController::class, 'export'])
         ->name('stocks.export');
     
-    // Company Management
-    Route::resource('companies', CompanyController::class);
-    Route::get('/companies-data', [CompanyController::class, 'getData'])->name('companies.data');
     
     // Market API
     Route::get('/api/market/summary', [StockController::class, 'marketSummary'])
@@ -127,6 +129,15 @@ Route::middleware(['auth', 'verified', 'role:admin,broker'])->group(function () 
         Route::get('/export', [AuditLogController::class, 'export'])->name('export');
         Route::get('/export-full', [AuditLogController::class, 'exportFull'])->name('exportFull');
     });
+
+    Route::prefix('admin')->name('admin.backups.')->group(function () {
+        Route::get('backups', [BackupController::class, 'index'])->name('index');
+        Route::post('backups/create', [BackupController::class, 'create'])->name('create');
+        Route::post('backups/restore', [BackupController::class, 'restore'])->name('restore');
+        Route::get('backups/download/{filename}', [BackupController::class, 'download'])->name('download');
+        Route::delete('backups/{filename}', [BackupController::class, 'delete'])->name('delete');
+    });
+
 
 
 });
@@ -152,6 +163,21 @@ Route::middleware(['auth'])->group(function () {
         ->name('account-balances.data');
 
 }); 
+
+
+
+
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\PermissionController;
+
+Route::middleware(['auth'])->group(function () {
+    // Roles
+    Route::resource('roles', RoleController::class);
+    
+    // Permissions
+    Route::resource('permissions', PermissionController::class);
+});
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -65,19 +65,21 @@ export default function Edit({ balance, users }: EditProps) {
         <AppLayout>
             <Head title="Edit Account Balance" />
 
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 transition-colors">
                 <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center transition-colors">
+                                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                                 </svg>
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Edit Account Balance</h1>
-                                <p className="text-gray-600 mt-1">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors">
+                                    Edit Account Balance
+                                </h1>
+                                <p className="text-gray-600 dark:text-gray-400 mt-1 transition-colors">
                                     {balance?.user ? `Editing balance for ${balance.user.name}` : 'Update account balance information'}
                                 </p>
                             </div>
@@ -85,32 +87,34 @@ export default function Edit({ balance, users }: EditProps) {
                     </div>
 
                     {/* Form Card */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                            <h2 className="text-lg font-semibold text-gray-900">Balance Information</h2>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
+                        <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800 transition-colors">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white transition-colors">
+                                Balance Information
+                            </h2>
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6">
                             {/* User Selection */}
                             <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
                                     User Account *
                                 </label>
                                 <select
                                     value={data.user_id}
                                     onChange={handleInputChange("user_id")}
-                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 py-3 px-4 border"
+                                    className="w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 transition-colors duration-200 py-3 px-4 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     required
                                 >
-                                    <option value="">Select a user</option>
+                                    <option value="" className="text-gray-900 dark:text-white">Select a user</option>
                                     {users.map((user) => (
-                                        <option key={user.id} value={user.id}>
+                                        <option key={user.id} value={user.id} className="text-gray-900 dark:text-white">
                                             {user.name} ({user.email})
                                         </option>
                                     ))}
                                 </select>
                                 {errors.user_id && (
-                                    <p className="text-red-600 text-sm font-medium mt-1 flex items-center gap-1">
+                                    <p className="text-red-600 dark:text-red-400 text-sm font-medium mt-1 flex items-center gap-1 transition-colors">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
@@ -123,12 +127,12 @@ export default function Edit({ balance, users }: EditProps) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {fields.map((field) => (
                                     <div key={field} className="space-y-2">
-                                        <label className="block text-sm font-medium text-gray-700">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
                                             {formatLabel(field)}
                                         </label>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <span className="text-gray-500">RF</span>
+                                                <span className="text-gray-500 dark:text-gray-400">RF</span>
                                             </div>
                                             <input
                                                 type="number"
@@ -136,12 +140,12 @@ export default function Edit({ balance, users }: EditProps) {
                                                 min="0"
                                                 value={data[field]}
                                                 onChange={handleInputChange(field)}
-                                                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors duration-200 py-3 px-4 border pl-10"
+                                                className="w-full rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-400 transition-colors duration-200 py-3 px-4 border bg-white dark:bg-gray-700 text-gray-900 dark:text-white pl-10"
                                                 placeholder="0.00"
                                             />
                                         </div>
                                         {errors[field] && (
-                                            <p className="text-red-600 text-sm font-medium mt-1 flex items-center gap-1">
+                                            <p className="text-red-600 dark:text-red-400 text-sm font-medium mt-1 flex items-center gap-1 transition-colors">
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
@@ -153,31 +157,35 @@ export default function Edit({ balance, users }: EditProps) {
                             </div>
 
                             {/* Summary Card */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 transition-colors">
                                 <div className="flex items-center gap-3 mb-3">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <h3 className="text-sm font-semibold text-blue-900">Quick Calculation</h3>
+                                    <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300 transition-colors">
+                                        Quick Calculation
+                                    </h3>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
-                                        <span className="text-blue-700">Cash + Investments:</span>
+                                        <span className="text-blue-700 dark:text-blue-400 transition-colors">Cash + Investments:</span>
                                     </div>
-                                    <div className="text-right font-medium text-blue-900">
+                                    <div className="text-right font-medium text-blue-900 dark:text-blue-300 transition-colors">
                                         RF{(cashBalance + investedAmount).toLocaleString()}
                                     </div>
                                     <div>
-                                        <span className="text-blue-700">Portfolio Value:</span>
+                                        <span className="text-blue-700 dark:text-blue-400 transition-colors">Portfolio Value:</span>
                                     </div>
-                                    <div className="text-right font-medium text-blue-900">
+                                    <div className="text-right font-medium text-blue-900 dark:text-blue-300 transition-colors">
                                         RF{portfolioValue.toLocaleString()}
                                     </div>
                                     <div>
-                                        <span className="text-blue-700">Difference:</span>
+                                        <span className="text-blue-700 dark:text-blue-400 transition-colors">Difference:</span>
                                     </div>
-                                    <div className={`text-right font-medium ${
-                                        portfolioValue >= (cashBalance + investedAmount) ? 'text-green-600' : 'text-red-600'
+                                    <div className={`text-right font-medium transition-colors ${
+                                        portfolioValue >= (cashBalance + investedAmount) 
+                                            ? 'text-green-600 dark:text-green-400' 
+                                            : 'text-red-600 dark:text-red-400'
                                     }`}>
                                         RF{(portfolioValue - (cashBalance + investedAmount)).toLocaleString()}
                                     </div>
@@ -185,18 +193,18 @@ export default function Edit({ balance, users }: EditProps) {
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-6 border-t border-gray-200">
+                            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end pt-6 border-t border-gray-200 dark:border-gray-700 transition-colors">
                                 <button
                                     type="button"
                                     onClick={() => window.history.back()}
-                                    className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                                    className="px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors duration-200"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="px-6 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2"
+                                    className="px-6 py-3 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2"
                                 >
                                     {processing ? (
                                         <>

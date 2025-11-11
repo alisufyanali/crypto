@@ -70,14 +70,32 @@ export default function ClientShow({ client }: Props) {
   // ✅ Get status badge color
   const getStatusBadge = (status: string) => {
     const statusMap: { [key: string]: { color: string; label: string } } = {
-      active: { color: "bg-green-100 text-green-800", label: "Active" },
-      inactive: { color: "bg-red-100 text-red-800", label: "Inactive" },
-      approved: { color: "bg-green-100 text-green-800", label: "Approved" },
-      pending: { color: "bg-yellow-100 text-yellow-800", label: "Pending" },
-      rejected: { color: "bg-red-100 text-red-800", label: "Rejected" },
+      active: { 
+        color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", 
+        label: "Active" 
+      },
+      inactive: { 
+        color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300", 
+        label: "Inactive" 
+      },
+      approved: { 
+        color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300", 
+        label: "Approved" 
+      },
+      pending: { 
+        color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300", 
+        label: "Pending" 
+      },
+      rejected: { 
+        color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300", 
+        label: "Rejected" 
+      },
     };
 
-    const statusInfo = statusMap[status] || { color: "bg-gray-100 text-gray-800", label: status };
+    const statusInfo = statusMap[status] || { 
+      color: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300", 
+      label: status 
+    };
     return (
       <Badge className={`${statusInfo.color} capitalize`}>
         {statusInfo.label}
@@ -104,16 +122,18 @@ export default function ClientShow({ client }: Props) {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
               {client.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
-              <p className="text-gray-600">{client.email}</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {client.name}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">{client.email}</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="border-2">
               <Link href="/clients">
                 ← Back to Clients
               </Link>
@@ -123,11 +143,14 @@ export default function ClientShow({ client }: Props) {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+          {/* Account Status Card */}
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Account Status</p>
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    Account Status
+                  </p>
                   <div className="mt-2">
                     {getStatusBadge(client.is_active == 1 ? "active" : "inactive")}
                   </div>
@@ -147,11 +170,14 @@ export default function ClientShow({ client }: Props) {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100">
+          {/* KYC Status Card */}
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-green-600">KYC Status</p>
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                    KYC Status
+                  </p>
                   <div className="mt-2">
                     {getStatusBadge(client.kyc_status)}
                   </div>
@@ -165,7 +191,7 @@ export default function ClientShow({ client }: Props) {
                 <Button
                   onClick={() => updateKycStatus("approved")}
                   size="sm"
-                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
                 >
                   Approve
                 </Button>
@@ -181,7 +207,7 @@ export default function ClientShow({ client }: Props) {
                   onClick={() => updateKycStatus("pending")}
                   size="sm"
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 dark:border-gray-600 dark:text-gray-300"
                 >
                   Reset
                 </Button>
@@ -189,12 +215,15 @@ export default function ClientShow({ client }: Props) {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100">
+          {/* Member Since Card */}
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-0 shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">Member Since</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+                    Member Since
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
                     {new Date(client.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -204,7 +233,7 @@ export default function ClientShow({ client }: Props) {
                 </div>
                 <div className="text-3xl">📅</div>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 {Math.floor((new Date().getTime() - new Date(client.created_at).getTime()) / (1000 * 60 * 60 * 24))} days ago
               </p>
             </CardContent>
@@ -212,9 +241,9 @@ export default function ClientShow({ client }: Props) {
         </div>
 
         {/* Client Details */}
-        <Card>
-          <CardHeader className="bg-gray-50 border-b">
-            <CardTitle className="flex items-center gap-2">
+        <Card className="border-0 shadow-lg dark:border dark:border-gray-700 dark:bg-gray-800/50">
+          <CardHeader className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-600">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <span className="text-xl">👤</span>
               Client Information
             </CardTitle>
@@ -223,22 +252,36 @@ export default function ClientShow({ client }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Email Address</label>
-                  <p className="text-gray-900 font-medium">{client.email}</p>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Email Address
+                  </label>
+                  <p className="text-gray-900 dark:text-white font-medium">{client.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Phone Number</label>
-                  <p className="text-gray-900 font-medium">{client.phone || "Not provided"}</p>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Phone Number
+                  </label>
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {client.phone || "Not provided"}
+                  </p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Client ID</label>
-                  <p className="text-gray-900 font-mono font-medium">#{client.id.toString().padStart(6, '0')}</p>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Client ID
+                  </label>
+                  <p className="text-gray-900 dark:text-white font-mono font-medium">
+                    #{client.id.toString().padStart(6, '0')}
+                  </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">KYC Documents</label>
-                  <p className="text-gray-900 font-medium">{client.kyc_documents.length} documents uploaded</p>
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    KYC Documents
+                  </label>
+                  <p className="text-gray-900 dark:text-white font-medium">
+                    {client.kyc_documents.length} documents uploaded
+                  </p>
                 </div>
               </div>
             </div>
@@ -246,9 +289,9 @@ export default function ClientShow({ client }: Props) {
         </Card>
 
         {/* KYC Documents Section */}
-        <Card>
-          <CardHeader className="bg-gray-50 border-b">
-            <CardTitle className="flex items-center gap-2">
+        <Card className="border-0 shadow-lg dark:border dark:border-gray-700 dark:bg-gray-800/50">
+          <CardHeader className="bg-gray-50 dark:bg-gray-700/50 border-b dark:border-gray-600">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <span className="text-xl">📄</span>
               KYC Documents ({client.kyc_documents.length})
             </CardTitle>
@@ -257,31 +300,43 @@ export default function ClientShow({ client }: Props) {
             {client.kyc_documents.length > 0 ? (
               <div className="space-y-4">
                 {client.kyc_documents.map((doc) => (
-                  <div key={doc.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div 
+                    key={doc.id} 
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow dark:border-gray-600 dark:bg-gray-700/30 dark:hover:bg-gray-700/50"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="text-2xl">
                           {getDocumentIcon(doc.document_type)}
                         </div>
                         <div>
-                          <h4 className="font-medium capitalize">
+                          <h4 className="font-medium capitalize text-gray-900 dark:text-white">
                             {doc.document_type.replace(/_/g, ' ')}
                           </h4>
-                          <p className="text-sm text-gray-600">{doc.original_filename}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {doc.original_filename}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="mb-2">{getStatusBadge(doc.status)}</div>
-                        <p className="text-xs text-gray-500">
-                          {doc.reviewed_at ? `Reviewed: ${new Date(doc.reviewed_at).toLocaleDateString()}` : 'Not reviewed'}
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {doc.reviewed_at ? 
+                            `Reviewed: ${new Date(doc.reviewed_at).toLocaleDateString()}` : 
+                            'Not reviewed'
+                          }
                         </p>
                       </div>
                     </div>
 
                     {doc.rejection_reason && (
-                      <div className="mt-3 p-3 bg-red-50 rounded border border-red-200">
-                        <p className="text-sm text-red-700 font-medium">Rejection Reason:</p>
-                        <p className="text-sm text-red-600">{doc.rejection_reason}</p>
+                      <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                        <p className="text-sm text-red-700 dark:text-red-300 font-medium">
+                          Rejection Reason:
+                        </p>
+                        <p className="text-sm text-red-600 dark:text-red-400">
+                          {doc.rejection_reason}
+                        </p>
                       </div>
                     )}
 
@@ -290,6 +345,7 @@ export default function ClientShow({ client }: Props) {
                         variant="outline"
                         size="sm"
                         asChild
+                        className="dark:border-gray-600 dark:text-gray-300"
                       >
                         <a href={`/storage/${doc.file_path}`} target="_blank" rel="noopener noreferrer">
                           👁️ View Document
@@ -301,7 +357,7 @@ export default function ClientShow({ client }: Props) {
                           <Button
                             onClick={() => handleApprove(doc.id)}
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
                           >
                             ✅ Approve
                           </Button>
@@ -311,7 +367,7 @@ export default function ClientShow({ client }: Props) {
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                                 placeholder="Rejection reason..."
-                                className="w-48"
+                                className="w-48 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                               />
                               <Button
                                 onClick={() => handleReject(doc.id)}
@@ -324,6 +380,7 @@ export default function ClientShow({ client }: Props) {
                                 onClick={() => setRejectingId(null)}
                                 size="sm"
                                 variant="outline"
+                                className="dark:border-gray-600 dark:text-gray-300"
                               >
                                 Cancel
                               </Button>
@@ -345,6 +402,7 @@ export default function ClientShow({ client }: Props) {
                           onClick={() => handleReset(doc.id)}
                           size="sm"
                           variant="outline"
+                          className="dark:border-gray-600 dark:text-gray-300"
                         >
                           🔄 Reset to Pending
                         </Button>
@@ -356,8 +414,12 @@ export default function ClientShow({ client }: Props) {
             ) : (
               <div className="text-center py-8">
                 <div className="text-6xl mb-4">📂</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No KYC Documents</h3>
-                <p className="text-gray-600">This client hasn't uploaded any KYC documents yet.</p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  No KYC Documents
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  This client hasn't uploaded any KYC documents yet.
+                </p>
               </div>
             )}
           </CardContent>

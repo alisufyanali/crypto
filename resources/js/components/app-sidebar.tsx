@@ -17,6 +17,10 @@ import {
     MessageSquare,
     Bell,
     Briefcase,
+    BarChart3, // Transactions ke liye
+    Wallet, // Account Balances ke liye
+    Database, // Backups ke liye
+    History, // Audit Logs ke liye
 } from "lucide-react";
 
 
@@ -30,10 +34,13 @@ const iconMap: Record<string, any> = {
   client: Users,
   users: ShieldCheck,
   order: ShoppingCart,
-  audit: FileText,
+  audit: History,
   contact: MessageSquare,
   notifications: Bell,
   portfolio: Briefcase,
+  transactions: BarChart3, // Add this
+  'account-balances': Wallet, // Add this
+  backups: Database, // Add this
 };
 
 const rawNavItems = [
@@ -50,6 +57,7 @@ const rawNavItems = [
   { title: 'Portfolio', href: '/portfolio', roles: ['admin', 'broker', 'client'] },
   { title: 'Transactions', href: '/transactions', roles: ['admin', 'broker', 'client'] },
   { title: 'Account Balances', href: '/account-balances', roles: ['admin', 'broker' ] },
+  { title: 'Backups', href: '/admin/backups', roles: ['admin', 'broker' ] },
 ];
 
 const mainNavItems: NavItem[] = rawNavItems.map((item) => {

@@ -36,10 +36,12 @@
     32 => 'Termwind\\Laravel\\TermwindServiceProvider',
     33 => 'Pest\\Laravel\\PestServiceProvider',
     34 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
-    35 => 'Spatie\\Permission\\PermissionServiceProvider',
-    36 => 'Tighten\\Ziggy\\ZiggyServiceProvider',
-    37 => 'Yajra\\DataTables\\DataTablesServiceProvider',
-    38 => 'App\\Providers\\AppServiceProvider',
+    35 => 'Spatie\\Backup\\BackupServiceProvider',
+    36 => 'Spatie\\Permission\\PermissionServiceProvider',
+    37 => 'Spatie\\SignalAwareCommand\\SignalAwareCommandServiceProvider',
+    38 => 'Tighten\\Ziggy\\ZiggyServiceProvider',
+    39 => 'Yajra\\DataTables\\DataTablesServiceProvider',
+    40 => 'App\\Providers\\AppServiceProvider',
   ),
   'eager' => 
   array (
@@ -63,10 +65,12 @@
     17 => 'Termwind\\Laravel\\TermwindServiceProvider',
     18 => 'Pest\\Laravel\\PestServiceProvider',
     19 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
-    20 => 'Spatie\\Permission\\PermissionServiceProvider',
-    21 => 'Tighten\\Ziggy\\ZiggyServiceProvider',
-    22 => 'Yajra\\DataTables\\DataTablesServiceProvider',
-    23 => 'App\\Providers\\AppServiceProvider',
+    20 => 'Spatie\\Backup\\BackupServiceProvider',
+    21 => 'Spatie\\Permission\\PermissionServiceProvider',
+    22 => 'Spatie\\SignalAwareCommand\\SignalAwareCommandServiceProvider',
+    23 => 'Tighten\\Ziggy\\ZiggyServiceProvider',
+    24 => 'Yajra\\DataTables\\DataTablesServiceProvider',
+    25 => 'App\\Providers\\AppServiceProvider',
   ),
   'deferred' => 
   array (

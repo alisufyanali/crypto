@@ -126,27 +126,27 @@ export default function CreateOrder({ companies, userBalance }: Props) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Place New Order" />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b">
+        <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-6">
               <div className="flex items-center">
                 <Link
                   href="/dashboard"
-                  className="mr-4 p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  className="mr-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Place New Order</h1>
-                  <p className="text-gray-600">Buy or sell stocks on Rwanda Stock Exchange</p>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Place New Order</h1>
+                  <p className="text-gray-600 dark:text-gray-400">Buy or sell stocks on Rwanda Stock Exchange</p>
                 </div>
               </div>
 
               <div className="text-right">
-                <p className="text-sm text-gray-600">Available Balance</p>
-                <p className="text-xl font-semibold text-gray-900">{formatCurrency(userBalance)}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Available Balance</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-white">{formatCurrency(userBalance)}</p>
               </div>
             </div>
           </div>
@@ -156,72 +156,74 @@ export default function CreateOrder({ companies, userBalance }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Order Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Order Details</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Order Details</h2>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                   {/* Order Type */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                       Order Type
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, type: 'buy' }))}
-                        className={`p-4 rounded-lg border-2 text-center transition-colors ${formData.type === 'buy'
-                            ? 'border-green-500 bg-green-50 text-green-700'
-                            : 'border-gray-200 hover:border-gray-300'
-                          }`}
+                        className={`p-4 rounded-lg border-2 text-center transition-colors ${
+                          formData.type === 'buy'
+                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        }`}
                       >
                         <TrendingUp className="w-6 h-6 mx-auto mb-2" />
                         <div className="font-medium">Buy</div>
-                        <div className="text-xs text-gray-500">Purchase shares</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Purchase shares</div>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, type: 'sell' }))}
-                        className={`p-4 rounded-lg border-2 text-center transition-colors ${formData.type === 'sell'
-                            ? 'border-red-500 bg-red-50 text-red-700'
-                            : 'border-gray-200 hover:border-gray-300'
-                          }`}
+                        className={`p-4 rounded-lg border-2 text-center transition-colors ${
+                          formData.type === 'sell'
+                            ? 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                            : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        }`}
                       >
                         <TrendingDown className="w-6 h-6 mx-auto mb-2" />
                         <div className="font-medium">Sell</div>
-                        <div className="text-xs text-gray-500">Sell shares</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Sell shares</div>
                       </button>
                     </div>
                   </div>
 
                   {/* Company Selection */}
                   <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Select Company
                     </label>
                     <select
                       id="company"
                       value={formData.company_id}
                       onChange={(e) => setFormData(prev => ({ ...prev, company_id: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
-                      <option value="">Choose a company...</option>
+                      <option value="" className="text-gray-500 dark:text-gray-400">Choose a company...</option>
                       {companies.map((company) => (
-                        <option key={company.id} value={company.id}>
+                        <option key={company.id} value={company.id} className="text-gray-900 dark:text-white">
                           {company.name} ({company.symbol}) - {company.current_stock ? formatCurrency(company.current_stock.current_price) : 'N/A'}
                         </option>
                       ))}
                     </select>
                     {errors.company_id && (
-                      <p className="mt-1 text-sm text-red-600">{errors.company_id}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.company_id}</p>
                     )}
                   </div>
 
                   {/* Quantity */}
                   <div>
-                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Quantity (Shares)
                     </label>
                     <input
@@ -230,17 +232,17 @@ export default function CreateOrder({ companies, userBalance }: Props) {
                       min="1"
                       value={formData.quantity}
                       onChange={(e) => setFormData(prev => ({ ...prev, quantity: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Enter number of shares"
                     />
                     {errors.quantity && (
-                      <p className="mt-1 text-sm text-red-600">{errors.quantity}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity}</p>
                     )}
                   </div>
 
                   {/* Price per Share */}
                   <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Price per Share (RWF)
                     </label>
                     <input
@@ -250,11 +252,11 @@ export default function CreateOrder({ companies, userBalance }: Props) {
                       step="0.01"
                       value={formData.price_per_share}
                       onChange={(e) => setFormData(prev => ({ ...prev, price_per_share: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       placeholder="Enter price per share"
                     />
                     {errors.price_per_share && (
-                      <p className="mt-1 text-sm text-red-600">{errors.price_per_share}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.price_per_share}</p>
                     )}
                   </div>
 
@@ -263,10 +265,11 @@ export default function CreateOrder({ companies, userBalance }: Props) {
                     <button
                       type="submit"
                       disabled={processing}
-                      className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${formData.type === 'buy'
-                          ? 'bg-green-600 hover:bg-green-700'
-                          : 'bg-red-600 hover:bg-red-700'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
+                        formData.type === 'buy'
+                          ? 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600'
+                          : 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {processing ? 'Placing Order...' : `Place ${formData.type.charAt(0).toUpperCase() + formData.type.slice(1)} Order`}
                     </button>
@@ -278,9 +281,9 @@ export default function CreateOrder({ companies, userBalance }: Props) {
             {/* Order Summary & Stock Info */}
             <div className="space-y-6">
               {/* Order Summary */}
-              <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                     <Calculator className="w-5 h-5 mr-2" />
                     Order Summary
                   </h2>
@@ -288,35 +291,37 @@ export default function CreateOrder({ companies, userBalance }: Props) {
 
                 <div className="p-6 space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Order Type:</span>
-                    <span className={`font-medium ${formData.type === 'buy' ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className="text-gray-600 dark:text-gray-400">Order Type:</span>
+                    <span className={`font-medium ${
+                      formData.type === 'buy' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                    }`}>
                       {formData.type.charAt(0).toUpperCase() + formData.type.slice(1)}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Quantity:</span>
-                    <span className="font-medium">{formData.quantity || '0'} shares</span>
+                    <span className="text-gray-600 dark:text-gray-400">Quantity:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formData.quantity || '0'} shares</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Price per Share:</span>
-                    <span className="font-medium">{formatCurrency(parseFloat(formData.price_per_share) || 0)}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Price per Share:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(parseFloat(formData.price_per_share) || 0)}</span>
                   </div>
 
-                  <hr />
+                  <hr className="dark:border-gray-600" />
 
                   <div className="flex justify-between text-lg font-semibold">
-                    <span>Total Amount:</span>
-                    <span>{formatCurrency(calculateTotal())}</span>
+                    <span className="text-gray-900 dark:text-white">Total Amount:</span>
+                    <span className="text-gray-900 dark:text-white">{formatCurrency(calculateTotal())}</span>
                   </div>
 
                   {formData.type === 'buy' && calculateTotal() > userBalance && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
-                      <AlertCircle className="w-5 h-5 text-red-400 mr-2 flex-shrink-0 mt-0.5" />
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-start">
+                      <AlertCircle className="w-5 h-5 text-red-400 dark:text-red-300 mr-2 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm text-red-800 font-medium">Insufficient Balance</p>
-                        <p className="text-xs text-red-600">
+                        <p className="text-sm text-red-800 dark:text-red-200 font-medium">Insufficient Balance</p>
+                        <p className="text-xs text-red-600 dark:text-red-300">
                           You need {formatCurrency(calculateTotal() - userBalance)} more to place this order.
                         </p>
                       </div>
@@ -327,44 +332,45 @@ export default function CreateOrder({ companies, userBalance }: Props) {
 
               {/* Selected Stock Info */}
               {selectedCompany && selectedCompany.current_stock && (
-                <div className="bg-white rounded-lg shadow">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-900">Stock Information</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900/50">
+                  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Stock Information</h2>
                   </div>
 
                   <div className="p-6">
                     <div className="mb-4">
-                      <h3 className="text-xl font-semibold text-gray-900">{selectedCompany.name}</h3>
-                      <p className="text-gray-600">{selectedCompany.symbol}</p>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{selectedCompany.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-400">{selectedCompany.symbol}</p>
                     </div>
 
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Current Price:</span>
-                        <span className="font-medium">{formatCurrency(selectedCompany.current_stock.current_price)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">Current Price:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedCompany.current_stock.current_price)}</span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Change:</span>
-                        <span className={`font-medium ${selectedCompany.current_stock.change_amount >= 0 ? 'text-green-600' : 'text-red-600'
-                          }`}>
+                        <span className="text-gray-600 dark:text-gray-400">Change:</span>
+                        <span className={`font-medium ${
+                          selectedCompany.current_stock.change_amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
                           {formatCurrency(selectedCompany.current_stock.change_amount)} ({formatPercentage(selectedCompany.current_stock.change_percentage)})
                         </span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Day High:</span>
-                        <span className="font-medium">{formatCurrency(selectedCompany.current_stock.day_high)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">Day High:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedCompany.current_stock.day_high)}</span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Day Low:</span>
-                        <span className="font-medium">{formatCurrency(selectedCompany.current_stock.day_low)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">Day Low:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(selectedCompany.current_stock.day_low)}</span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Volume:</span>
-                        <span className="font-medium">{selectedCompany.current_stock.volume.toLocaleString()}</span>
+                        <span className="text-gray-600 dark:text-gray-400">Volume:</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{selectedCompany.current_stock.volume.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -372,12 +378,12 @@ export default function CreateOrder({ companies, userBalance }: Props) {
               )}
 
               {/* Important Notice */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <div className="flex items-start">
-                  <AlertCircle className="w-5 h-5 text-blue-400 mr-2 flex-shrink-0 mt-0.5" />
+                  <AlertCircle className="w-5 h-5 text-blue-400 dark:text-blue-300 mr-2 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-sm font-medium text-blue-800">Important Notice</h4>
-                    <p className="text-xs text-blue-600 mt-1">
+                    <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">Important Notice</h4>
+                    <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
                       All orders require approval from our brokers before execution. You will be notified once your order is processed.
                     </p>
                   </div>

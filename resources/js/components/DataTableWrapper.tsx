@@ -79,14 +79,151 @@ export default function DataTableWrapper({
   const customStyles = {
     headCells: {
       style: {
-        backgroundColor: "#d6d9ddff",
+        backgroundColor: "#e5e7eb",
         color: "#111827",
         fontWeight: "600",
         fontSize: "14px",
+        borderBottom: "1px solid #d1d5db",
       },
     },
     rows: {
-      style: { fontSize: "14px" },
+      style: {
+        fontSize: "14px",
+        backgroundColor: "#ffffff",
+        borderBottom: "1px solid #f3f4f6",
+        "&:nth-of-type(odd)": {
+          backgroundColor: "#f9fafb",
+        },
+        "&:hover": {
+          backgroundColor: "#f3f4f6",
+          cursor: "pointer",
+        },
+      },
+    },
+    cells: {
+      style: {
+        color: "#374151",
+        padding: "12px 16px",
+      },
+    },
+    pagination: {
+      style: {
+        backgroundColor: "#ffffff",
+        borderTop: "1px solid #e5e7eb",
+        color: "#374151",
+      },
+    },
+  };
+
+  const darkCustomStyles = {
+    table: {
+      style: {
+        backgroundColor: "#1e293b",
+        color: "#e2e8f0",
+      },
+    },
+    headRow: {
+      style: {
+        backgroundColor: "#334155",
+        borderBottom: "2px solid #475569",
+        minHeight: "52px",
+      },
+    },
+    headCells: {
+      style: {
+        backgroundColor: "#334155",
+        color: "#f1f5f9",
+        fontWeight: "700",
+        fontSize: "14px",
+        paddingLeft: "16px",
+        paddingRight: "16px",
+        borderRight: "1px solid #475569",
+        "&:last-of-type": {
+          borderRight: "none",
+        },
+      },
+    },
+    rows: {
+      style: {
+        fontSize: "14px",
+        backgroundColor: "#1e293b",
+        color: "#e2e8f0",
+        minHeight: "56px",
+        borderBottom: "1px solid #334155",
+        "&:nth-of-type(odd)": {
+          backgroundColor: "#0f172a",
+        },
+        "&:hover": {
+          backgroundColor: "#334155",
+          cursor: "pointer",
+          transition: "background-color 0.2s ease",
+        },
+      },
+      highlightOnHoverStyle: {
+        backgroundColor: "#334155",
+        borderBottomColor: "#475569",
+        outline: "none",
+      },
+      stripedStyle: {
+        backgroundColor: "#0f172a",
+      },
+    },
+    cells: {
+      style: {
+        color: "#cbd5e1",
+        paddingLeft: "16px",
+        paddingRight: "16px",
+        fontSize: "14px",
+        borderRight: "1px solid #334155",
+        "&:last-of-type": {
+          borderRight: "none",
+        },
+      },
+    },
+    pagination: {
+      style: {
+        backgroundColor: "#1e293b",
+        color: "#e2e8f0",
+        borderTop: "2px solid #334155",
+        minHeight: "56px",
+      },
+      pageButtonsStyle: {
+        borderRadius: "6px",
+        height: "36px",
+        width: "36px",
+        padding: "8px",
+        margin: "0 4px",
+        cursor: "pointer",
+        transition: "all 0.2s",
+        color: "#94a3b8",
+        fill: "#94a3b8",
+        backgroundColor: "transparent",
+        "&:disabled": {
+          cursor: "not-allowed",
+          color: "#475569",
+          fill: "#475569",
+        },
+        "&:hover:not(:disabled)": {
+          backgroundColor: "#334155",
+          color: "#e2e8f0",
+          fill: "#e2e8f0",
+        },
+        "&:focus": {
+          outline: "none",
+          backgroundColor: "#334155",
+        },
+      },
+    },
+    noData: {
+      style: {
+        backgroundColor: "#1e293b",
+        color: "#94a3b8",
+      },
+    },
+    progress: {
+      style: {
+        backgroundColor: "#1e293b",
+      },
     },
   };
 
@@ -137,13 +274,13 @@ export default function DataTableWrapper({
   };
 
   const subHeaderComponent = (
-    <div className="flex flex-col gap-3 w-full px-2">
+    <div className="flex flex-col gap-4 w-full p-4 bg-slate-800/50 dark:bg-slate-900/50 rounded-t-xl border-b border-slate-700">
       {/* Filters */}
       {additionalFilters.length > 0 && (
         <div className="flex gap-3 flex-wrap">
           {additionalFilters.map((filter) => (
             <div key={filter.name} className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-semibold text-gray-700 dark:text-slate-300 whitespace-nowrap">
                 {filter.label}:
               </label>
               {filter.type === "select" && filter.options ? (
@@ -152,7 +289,7 @@ export default function DataTableWrapper({
                   onChange={(e) =>
                     handleFilterChange(filter.name, e.target.value)
                   }
-                  className="border border-gray-300 px-3 py-2 rounded text-sm"
+                  className="border border-gray-300 dark:border-slate-600 px-4 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 >
                   {filter.options.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -167,7 +304,7 @@ export default function DataTableWrapper({
                   onChange={(e) =>
                     handleFilterChange(filter.name, e.target.value)
                   }
-                  className="border border-gray-300 px-3 py-2 rounded text-sm"
+                  className="border border-gray-300 dark:border-slate-600 px-4 py-2 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder={`Filter by ${filter.label}`}
                 />
               )}
@@ -177,11 +314,11 @@ export default function DataTableWrapper({
       )}
 
       {/* Search + Export */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-4 flex-wrap">
         <input
           type="text"
           placeholder="Search by ID, Company, or Client"
-          className="border px-3 py-2 rounded w-64"
+          className="border border-gray-300 dark:border-slate-600 px-4 py-2.5 rounded-lg flex-1 min-w-[280px] bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
         />
@@ -196,20 +333,20 @@ export default function DataTableWrapper({
             })}
             headers={csvHeaders}
             filename="data.csv"
-            className="rounded bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+            className="rounded-lg bg-green-600 px-4 py-2.5 text-white font-medium hover:bg-green-700 active:bg-green-800 transition-all shadow-md hover:shadow-lg"
           >
             Export CSV
           </CSVLink>
           <button
             onClick={() => exportPDF(false)}
-            className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+            className="rounded-lg bg-red-600 px-4 py-2.5 text-white font-medium hover:bg-red-700 active:bg-red-800 transition-all shadow-md hover:shadow-lg"
           >
             Export PDF
           </button>
 
           <button
             onClick={() => exportPDF(true)}
-            className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+            className="rounded-lg bg-slate-600 px-4 py-2.5 text-white font-medium hover:bg-slate-700 active:bg-slate-800 transition-all shadow-md hover:shadow-lg"
           >
             View PDF
           </button>
@@ -225,21 +362,21 @@ export default function DataTableWrapper({
         <div className="flex justify-end mb-3">
           <Link
             href={createUrl}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700"
+            className="rounded-lg bg-blue-600 px-5 py-2.5 text-white font-medium shadow-md hover:bg-blue-700 active:bg-blue-800 hover:shadow-lg transition-all"
           >
             {createLabel}
           </Link>
         </div>
       )}
 
-      <div className="relative flex-1 m-5 p-5 overflow-hidden rounded-xl border border-sidebar-border/70 bg-white dark:bg-neutral-900 shadow-md">
+      <div className="relative flex-1 overflow-hidden rounded-xl border border-slate-700 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl dark:shadow-2xl dark:shadow-slate-950/50">
         <DataTable
           columns={columns.map((col) =>
             col.name === "Actions"
               ? {
-                  ...col,
-                  cell: (row: any) => col.cell(row, reloadData),
-                }
+                ...col,
+                cell: (row: any) => col.cell(row, reloadData),
+              }
               : col
           )}
           data={filteredItems}
@@ -250,7 +387,9 @@ export default function DataTableWrapper({
           responsive
           subHeader
           subHeaderComponent={subHeaderComponent}
-          customStyles={customStyles}
+          customStyles={document.documentElement.classList.contains('dark') ? darkCustomStyles : customStyles}
+          paginationPerPage={10}
+          paginationRowsPerPageOptions={[10, 20, 30, 50, 100]}
         />
       </div>
     </div>

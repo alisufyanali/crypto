@@ -34,14 +34,35 @@ interface Props {
 }
 
 const getTypeBadgeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    deposit: "bg-green-100 text-green-800 border-green-300",
-    withdrawal: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    buy: "bg-blue-100 text-blue-800 border-blue-300",
-    sell: "bg-purple-100 text-purple-800 border-purple-300",
-    dividend: "bg-gray-100 text-gray-800 border-gray-300",
+  const colors: Record<string, { light: string; dark: string }> = {
+    deposit: {
+      light: "bg-green-100 text-green-800 border-green-300",
+      dark: "bg-green-900/30 text-green-300 border-green-700"
+    },
+    withdrawal: {
+      light: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      dark: "bg-yellow-900/30 text-yellow-300 border-yellow-700"
+    },
+    buy: {
+      light: "bg-blue-100 text-blue-800 border-blue-300",
+      dark: "bg-blue-900/30 text-blue-300 border-blue-700"
+    },
+    sell: {
+      light: "bg-purple-100 text-purple-800 border-purple-300",
+      dark: "bg-purple-900/30 text-purple-300 border-purple-700"
+    },
+    dividend: {
+      light: "bg-gray-100 text-gray-800 border-gray-300",
+      dark: "bg-gray-700 text-gray-300 border-gray-600"
+    },
   };
-  return colors[type] || "bg-gray-100 text-gray-800 border-gray-300";
+  
+  const colorSet = colors[type] || {
+    light: "bg-gray-100 text-gray-800 border-gray-300",
+    dark: "bg-gray-700 text-gray-300 border-gray-600"
+  };
+  
+  return `${colorSet.light} dark:${colorSet.dark}`;
 };
 
 const getTypeIcon = (type: string) => {
@@ -71,12 +92,12 @@ export default function TransactionShow({ transaction }: Props) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Transaction #${transaction.id}`} />
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <Link
             href="/transactions"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
           >
             <ArrowLeft size={20} />
             <span>Back to Transactions</span>
@@ -84,20 +105,20 @@ export default function TransactionShow({ transaction }: Props) {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors">
           {/* Header Section */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-4xl">{getTypeIcon(transaction.type)}</span>
-                  <h1 className="text-3xl font-bold">Transaction Details</h1>
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 px-6 py-8 text-white">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">{getTypeIcon(transaction.type)}</span>
+                <div>
+                  <h1 className="text-2xl lg:text-3xl font-bold">Transaction Details</h1>
+                  <p className="text-blue-100 dark:text-blue-200 mt-1">ID: {transaction.transaction_id}</p>
                 </div>
-                <p className="text-blue-100">ID: {transaction.transaction_id}</p>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-blue-100 mb-1">Amount</div>
-                <div className="text-3xl font-bold">
+              <div className="text-left lg:text-right">
+                <div className="text-sm text-blue-100 dark:text-blue-200 mb-1">Amount</div>
+                <div className="text-2xl lg:text-3xl font-bold">
                   RF {parseFloat(transaction.amount).toFixed(2)}
                 </div>
               </div>
@@ -108,28 +129,28 @@ export default function TransactionShow({ transaction }: Props) {
           <div className="p-6">
             {/* Type Badge */}
             <div className="mb-6">
-              <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold uppercase border-2 ${getTypeBadgeColor(transaction.type)}`}>
+              <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold uppercase border-2 transition-colors ${getTypeBadgeColor(transaction.type)}`}>
                 {transaction.type}
               </span>
             </div>
 
             {/* Info Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {/* User Info */}
               {transaction.user && (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-colors">
                   <div className="flex items-center gap-2 mb-3">
-                    <User size={20} className="text-gray-600" />
-                    <h3 className="font-semibold text-gray-900">User Information</h3>
+                    <User size={20} className="text-gray-600 dark:text-gray-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">User Information</h3>
                   </div>
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm text-gray-600">Name:</span>
-                      <p className="font-medium">{transaction.user.name}</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Name:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">{transaction.user.name}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-600">Email:</span>
-                      <p className="font-medium">{transaction.user.email}</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Email:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">{transaction.user.email}</p>
                     </div>
                   </div>
                 </div>
@@ -137,19 +158,19 @@ export default function TransactionShow({ transaction }: Props) {
 
               {/* Company Info */}
               {transaction.order?.company && (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-colors">
                   <div className="flex items-center gap-2 mb-3">
-                    <Building2 size={20} className="text-gray-600" />
-                    <h3 className="font-semibold text-gray-900">Company Information</h3>
+                    <Building2 size={20} className="text-gray-600 dark:text-gray-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Company Information</h3>
                   </div>
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm text-gray-600">Company:</span>
-                      <p className="font-medium">{transaction.order.company.name}</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Company:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">{transaction.order.company.name}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-600">Symbol:</span>
-                      <p className="font-medium">{transaction.order.company.symbol}</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Symbol:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">{transaction.order.company.symbol}</p>
                     </div>
                   </div>
                 </div>
@@ -157,44 +178,44 @@ export default function TransactionShow({ transaction }: Props) {
 
               {/* Order Info */}
               {transaction.order && (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-colors">
                   <div className="flex items-center gap-2 mb-3">
-                    <Hash size={20} className="text-gray-600" />
-                    <h3 className="font-semibold text-gray-900">Order Details</h3>
+                    <Hash size={20} className="text-gray-600 dark:text-gray-400" />
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Order Details</h3>
                   </div>
                   <div className="space-y-2">
                     <div>
-                      <span className="text-sm text-gray-600">Order ID:</span>
-                      <p className="font-medium">#{transaction.order.id}</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Order ID:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">#{transaction.order.id}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-600">Quantity:</span>
-                      <p className="font-medium">{transaction.order.quantity} shares</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Quantity:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">{transaction.order.quantity} shares</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-600">Price per share:</span>
-                      <p className="font-medium">RF {parseFloat(transaction.order.price).toFixed(2)}</p>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">Price per share:</span>
+                      <p className="font-medium text-gray-900 dark:text-white">RF {parseFloat(transaction.order.price).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Transaction Info */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-colors">
                 <div className="flex items-center gap-2 mb-3">
-                  <Calendar size={20} className="text-gray-600" />
-                  <h3 className="font-semibold text-gray-900">Transaction Info</h3>
+                  <Calendar size={20} className="text-gray-600 dark:text-gray-400" />
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Transaction Info</h3>
                 </div>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm text-gray-600">Created:</span>
-                    <p className="font-medium">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Created:</span>
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {new Date(transaction.created_at).toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-600">Updated:</span>
-                    <p className="font-medium">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Updated:</span>
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {new Date(transaction.updated_at).toLocaleString()}
                     </p>
                   </div>
@@ -203,40 +224,40 @@ export default function TransactionShow({ transaction }: Props) {
             </div>
 
             {/* Description */}
-            <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700 transition-colors">
               <div className="flex items-center gap-2 mb-2">
-                <FileText size={20} className="text-blue-600" />
-                <h3 className="font-semibold text-gray-900">Description</h3>
+                <FileText size={20} className="text-blue-600 dark:text-blue-400" />
+                <h3 className="font-semibold text-gray-900 dark:text-white">Description</h3>
               </div>
-              <p className="text-gray-700">{transaction.description}</p>
+              <p className="text-gray-700 dark:text-gray-300">{transaction.description}</p>
             </div>
 
             {/* Metadata */}
             {transaction.metadata && Object.keys(transaction.metadata).length > 0 && (
-              <div className="mt-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h3 className="font-semibold text-gray-900 mb-3">Additional Information</h3>
-                <pre className="text-sm bg-white p-3 rounded border border-gray-300 overflow-x-auto">
+              <div className="mt-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600 transition-colors">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Additional Information</h3>
+                <pre className="text-sm bg-white dark:bg-gray-800 p-3 rounded border border-gray-300 dark:border-gray-600 overflow-x-auto text-gray-900 dark:text-gray-300 transition-colors">
                   {JSON.stringify(transaction.metadata, null, 2)}
                 </pre>
               </div>
             )}
 
             {/* Amount Breakdown */}
-            <div className="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border-2 border-green-200">
-              <div className="flex items-center justify-between">
+            <div className="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 border-2 border-green-200 dark:border-green-700 transition-colors">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <DollarSign size={32} className="text-green-600" />
+                  <DollarSign size={32} className="text-green-600 dark:text-green-400" />
                   <div>
-                    <p className="text-sm text-gray-600">Total Amount</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Amount</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       RF {parseFloat(transaction.amount).toFixed(2)}
                     </p>
                   </div>
                 </div>
                 {transaction.order && (
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">Total Value</p>
-                    <p className="text-xl font-semibold text-gray-900">
+                  <div className="text-left lg:text-right">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Value</p>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
                       {transaction.order.quantity} × RF {parseFloat(transaction.order.price).toFixed(2)}
                     </p>
                   </div>
