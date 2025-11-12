@@ -9,10 +9,6 @@ interface User {
     email: string;
 }
 
-interface PageProps {
-    users: User[];
-}
-
 interface FormData {
     user_id: string;
     cash_balance: string;
@@ -21,8 +17,13 @@ interface FormData {
     total_pnl: string;
 }
 
+// Define the page props inline with usePage
+type PageProps = {
+    users: User[];
+};
+
 export default function CreateAccountBalance() {
-    const { users }: PageProps = usePage().props;
+    const { users } = usePage<PageProps>().props;
     const { data, setData, post, processing, errors } = useForm<FormData>({
         user_id: "",
         cash_balance: "",
@@ -172,23 +173,21 @@ export default function CreateAccountBalance() {
                                     <div className="text-right font-semibold text-blue-900 dark:text-blue-300 transition-colors">
                                         RF{(cashBalance + investedAmount).toLocaleString()}
                                     </div>
-                                    
+
                                     <div className="text-blue-700 dark:text-blue-400 transition-colors">Portfolio Value:</div>
                                     <div className="text-right font-semibold text-blue-900 dark:text-blue-300 transition-colors">
                                         RF{portfolioValue.toLocaleString()}
                                     </div>
-                                    
+
                                     <div className="text-blue-700 dark:text-blue-400 transition-colors">Profit & Loss:</div>
-                                    <div className={`text-right font-semibold transition-colors ${
-                                        totalPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                                    }`}>
+                                    <div className={`text-right font-semibold transition-colors ${totalPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                        }`}>
                                         RF{totalPnl.toLocaleString()}
                                     </div>
-                                    
+
                                     <div className="text-blue-700 dark:text-blue-400 transition-colors">Net Worth:</div>
-                                    <div className={`text-right font-semibold transition-colors ${
-                                        (cashBalance + portfolioValue) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                                    }`}>
+                                    <div className={`text-right font-semibold transition-colors ${(cashBalance + portfolioValue) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                                        }`}>
                                         RF{(cashBalance + portfolioValue).toLocaleString()}
                                     </div>
                                 </div>

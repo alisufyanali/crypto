@@ -173,9 +173,11 @@ use App\Http\Controllers\Admin\PermissionController;
 Route::middleware(['auth'])->group(function () {
     // Roles
     Route::resource('roles', RoleController::class);
-    
+    Route::get('/roles-data', [RoleController::class, 'getData'])->name('roles.data');
     // Permissions
     Route::resource('permissions', PermissionController::class);
+    Route::get('/permissions-data', [PermissionController::class, 'getData'])->name('permissions.data');
+
 });
 
 

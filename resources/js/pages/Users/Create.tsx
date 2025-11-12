@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AppLayout from "@/layouts/app-layout";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { type BreadcrumbItem } from "@/types";
 
 // shadcn/ui imports
@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Loader2, 
   User, 
@@ -17,8 +24,18 @@ import {
   UserPlus, 
   Shield,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Badge
 } from "lucide-react";
+
+interface Role {
+  id: number;
+  name: string;
+}
+
+interface PageProps {
+  roles: Role[];
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: "Users", href: "/users" },
@@ -26,11 +43,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function UserCreate() {
+  const { props }: any = usePage();
+  const { roles } = props;
+
   const [data, setData] = useState({
     name: "",
     email: "",
     password: "",
     password_confirmation: "",
+    role_id: "",
   });
 
   const [errors, setErrors] = useState<any>({});
@@ -49,6 +70,13 @@ export default function UserCreate() {
     // Calculate password strength
     if (name === "password") {
       calculatePasswordStrength(value);
+    }
+  };
+
+  const handleRoleChange = (value: string) => {
+    setData({ ...data, role_id: value });
+    if (errors.role_id) {
+      setErrors({ ...errors, role_id: null });
     }
   };
 
@@ -74,6 +102,19 @@ export default function UserCreate() {
     if (passwordStrength <= 2) return "Weak";
     if (passwordStrength <= 3) return "Medium";
     return "Strong";
+  };
+
+  const getRoleColor = (roleName: string) => {
+    switch (roleName.toLowerCase()) {
+      case 'admin':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'broker':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'analyst':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -104,7 +145,7 @@ export default function UserCreate() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Create New user
+                Create New User
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
                 Add a new user to your trading platform
@@ -114,12 +155,12 @@ export default function UserCreate() {
           <Button variant="outline" asChild className="flex items-center gap-2 border-2">
             <Link href="/users">
               <ArrowLeft size={16} />
-              Back to users
+              Back to Users
             </Link>
           </Button>
         </div>
 
-        {/* Create user Card */}
+        {/* Create User Card */}
         <Card className="shadow-xl border-0 dark:border dark:border-gray-700 bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800 dark:to-gray-900/50">
           <CardHeader className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-500/20 dark:to-indigo-500/20 border-b border-blue-100 dark:border-gray-700">
             <CardTitle className="flex items-center gap-3 text-2xl font-bold">
@@ -127,7 +168,7 @@ export default function UserCreate() {
                 <User className="text-white" size={20} />
               </div>
               <span className="text-gray-900 dark:text-white">
-                user Information
+                User Information
               </span>
             </CardTitle>
           </CardHeader>
@@ -185,6 +226,41 @@ export default function UserCreate() {
                   <p className="text-red-500 text-sm flex items-center gap-1 mt-2">
                     <Info size={14} />
                     {errors.email}
+                  </p>
+                )}
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-3">
+                <Label htmlFor="role_id" className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Badge size={16} className="text-blue-500" />
+                  User Role
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select value={data.role_id} onValueChange={handleRoleChange}>
+                  <SelectTrigger className={`h-12 text-lg border-2 ${
+                    errors.role_id 
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
+                      : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500'
+                  } bg-white dark:bg-gray-800`}>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((role) => (
+                      <SelectItem key={role.id} value={role.id.toString()}>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(role.name)}`}>
+                            {role.name}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.role_id && (
+                  <p className="text-red-500 text-sm flex items-center gap-1 mt-2">
+                    <Info size={14} />
+                    {errors.role_id}
                   </p>
                 )}
               </div>
@@ -284,12 +360,12 @@ export default function UserCreate() {
                   {processing ? (
                     <>
                       <Loader2 className="mr-3 h-5 w-5 animate-spin" />
-                      Creating user...
+                      Creating User...
                     </>
                   ) : (
                     <>
                       <UserPlus className="mr-3 h-5 w-5" />
-                      Create user Account
+                      Create User Account
                     </>
                   )}
                 </Button>
@@ -317,12 +393,12 @@ export default function UserCreate() {
               </div>
               <div className="flex-1">
                 <h4 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                  user Creation Guide
+                  User Creation Guide
                 </h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-green-500" />
-                    user will receive login credentials via email
+                    User will receive login credentials via email
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-green-500" />
@@ -335,6 +411,10 @@ export default function UserCreate() {
                   <li className="flex items-center gap-2">
                     <CheckCircle2 size={16} className="text-green-500" />
                     Ensure password meets security requirements
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-green-500" />
+                    Role determines user permissions and access levels
                   </li>
                 </ul>
               </div>

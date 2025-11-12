@@ -11,22 +11,52 @@ use Yajra\DataTables\Facades\DataTables;
 
 class AccountBalanceController extends Controller
 {
+    
     public function index()
     {
-        return Inertia::render('AccountBalances/Index');
+        // Additional method level check (optional)
+        if (!auth()->user()->can('account_balances.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        return Inertia::render('AccountBalances/Index', [
+            'can' => [
+                'create' => auth()->user()->can('account_balances.create'),
+                'edit' => auth()->user()->can('account_balances.edit'),
+                'delete' => auth()->user()->can('account_balances.delete'),
+            ]
+        ]);
     }
 
     public function getData()
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.view')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $balances = AccountBalance::with('user')->latest();
 
         return DataTables::of($balances)
             ->addColumn('user_name', fn($row) => $row->user?->name ?? 'N/A')
+            ->addColumn('actions', function($balance) {
+                return [
+                    'id' => $balance->id,
+                    'can_edit' => auth()->user()->can('account_balances.edit'),
+                    'can_delete' => auth()->user()->can('account_balances.delete'),
+                    'can_view' => auth()->user()->can('account_balances.view'),
+                ];
+            })
             ->make(true);
     }
 
     public function create()
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.create')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('AccountBalances/Create', [
             'users' => User::select('id', 'name', 'email')->get(),
         ]);
@@ -35,6 +65,11 @@ class AccountBalanceController extends Controller
 
     public function store(Request $request)
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.create')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,id|unique:account_balances,user_id',
             'cash_balance' => 'required|numeric|min:0',
@@ -51,13 +86,25 @@ class AccountBalanceController extends Controller
  
     public function show(AccountBalance $accountBalance)
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.view')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('AccountBalances/Show', [
             'account_balance' => $accountBalance->load('user'),
+            'can_edit' => auth()->user()->can('account_balances.edit'),
+            'can_delete' => auth()->user()->can('account_balances.delete'),
         ]);
     }
 
     public function edit(AccountBalance $accountBalance)
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.edit')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('AccountBalances/Edit', [
             'balance' => [
                 'id' => $accountBalance->id,
@@ -78,6 +125,11 @@ class AccountBalanceController extends Controller
 
     public function update(Request $request, AccountBalance $accountBalance)
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.edit')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'cash_balance' => 'required|numeric|min:0',
@@ -94,6 +146,11 @@ class AccountBalanceController extends Controller
 
     public function destroy(AccountBalance $accountBalance)
     {
+        // Method level permission check
+        if (!auth()->user()->can('account_balances.delete')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $accountBalance->delete();
 
         return redirect()->route('account-balances.index')

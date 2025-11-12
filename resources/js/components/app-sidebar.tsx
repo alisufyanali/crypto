@@ -49,7 +49,6 @@ const rawNavItems = [
   { title: 'Company', href: '/companies', roles: ['admin', 'broker', 'client'] },
   { title: 'Stocks', href: '/stocks', roles: ['admin', 'broker'] },
   { title: 'Client', href: '/clients', roles: ['admin', 'broker'] },
-  { title: 'Users', href: '/users', roles: ['admin', 'broker'] },
   { title: 'Order', href: '/orders', roles: ['admin', 'broker', 'client'] },
   { title: 'Audit Logs', href: '/audit-logs', roles: ['admin'] },
   { title: 'Contact Forms', href: '/admin/contacts', roles: ['admin', 'broker'] },
@@ -58,6 +57,9 @@ const rawNavItems = [
   { title: 'Transactions', href: '/transactions', roles: ['admin', 'broker', 'client'] },
   { title: 'Account Balances', href: '/account-balances', roles: ['admin', 'broker' ] },
   { title: 'Backups', href: '/admin/backups', roles: ['admin', 'broker' ] },
+  { title: 'Users', href: '/users', roles: ['admin', 'broker'] },
+  { title: 'Roles', href: '/roles', roles: ['admin', 'broker' ] },
+  { title: 'Permissions', href: '/permissions', roles: ['admin', 'broker' ] },
 ];
 
 const mainNavItems: NavItem[] = rawNavItems.map((item) => {

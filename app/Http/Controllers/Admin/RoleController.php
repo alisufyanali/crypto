@@ -7,26 +7,23 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Inertia\Inertia;
+use Yajra\DataTables\Facades\DataTables;
 
 class RoleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::with('permissions')->get();
-        
         return Inertia::render('Roles/Index', [
-            'roles' => $roles
+            'userRole' => $request->user()->role,
         ]);
     }
 
     public function create()
     {
-        $permissions = Permission::all()->groupBy(function($permission) {
-            return explode('.', $permission->name)[0];
-        });
+        $permissions = Permission::all(); // Yeh plain array return karega
 
         return Inertia::render('Roles/Create', [
-            'permissions' => $permissions
+            'permissions' => $permissions // Plain array bhejo
         ]);
     }
 
@@ -89,5 +86,23 @@ class RoleController extends Controller
 
         return redirect()->route('roles.index')
             ->with('success', 'Role deleted successfully.');
+    }
+
+    public function getData()
+    {
+        $roles = Role::withCount('users')->with('permissions')->get();
+
+        return DataTables::of($roles)
+            ->addColumn('permissions_list', function($role) {
+                return $role->permissions->pluck('name')->implode(', ');
+            })
+            ->addColumn('actions', function($role) {
+                return [
+                    'id' => $role->id,
+                    'users_count' => $role->users_count,
+                    'can_delete' => $role->users_count === 0
+                ];
+            })
+            ->make(true);
     }
 }

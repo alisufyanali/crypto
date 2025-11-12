@@ -1,97 +1,143 @@
-// resources/js/Pages/Permissions/Index.tsx
-import { Head, Link, router } from '@inertiajs/react';
-import { Trash2, Edit, Plus } from 'lucide-react';
+import AppLayout from "@/layouts/app-layout";
+import { Head, Link, usePage } from "@inertiajs/react";
+import { Pencil } from "lucide-react";
+import DataTableWrapper from "@/components/DataTableWrapper";
+import DeleteConfirm from "@/components/DeleteConfirm";
 
 interface Permission {
     id: number;
     name: string;
+    description?: string;
+    category: string;
+    roles_count: number;
 }
 
-interface Props {
-    permissions: Record<string, Permission[]>;
-}
-
-export default function PermissionsIndex({ permissions }: Props) {
-    const deletePermission = (id: number) => {
-        if (confirm('Are you sure you want to delete this permission?')) {
-            router.delete(`/permissions/${id}`);
-        }
+interface PageProps {
+    userRole: string;
+    flash?: {
+        success?: string;
+        error?: string;
     };
+}
+
+export default function PermissionsIndex() {
+    const { props }: any = usePage();
+    const { flash, userRole } = props;
+
+    const isAdmin = userRole === "admin";
+
+    const columns = [
+        { 
+            name: "ID", 
+            selector: (row: Permission) => row.id, 
+            sortable: true,
+            width: "80px"
+        },
+        { 
+            name: "Permission Name", 
+            selector: (row: Permission) => row.name, 
+            sortable: true,
+            cell: (row: Permission) => (
+                <div>
+                    <div className="font-medium text-gray-900 dark:text-white">
+                        {row.name}
+                    </div>
+                    {row.description && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            {row.description}
+                        </div>
+                    )}
+                </div>
+            )
+        },
+        { 
+            name: "Category", 
+            selector: (row: Permission) => row.category, 
+            sortable: true,
+            cell: (row: Permission) => (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 capitalize">
+                    {row.category}
+                </span>
+            )
+        },
+        { 
+            name: "Roles", 
+            selector: (row: Permission) => row.roles_count, 
+            sortable: true,
+            cell: (row: Permission) => (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    {row.roles_count} roles
+                </span>
+            )
+        },
+        {
+            name: "Actions",
+            cell: (row: Permission, reloadData: () => void) => (
+                <div className="flex gap-2">
+                    <Link
+                        href={`/permissions/${row.id}/edit`}
+                        className="p-2 rounded bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+                    >
+                        <Pencil size={16} />
+                    </Link>
+                    {row.roles_count === 0 && (
+                        <DeleteConfirm 
+                            id={row.id} 
+                            url={`/permissions/${row.id}`} 
+                            onSuccess={reloadData}
+                        />
+                    )}
+                </div>
+            ),
+            ignoreRowClick: true,
+            allowOverflow: true,
+            button: true,
+        },
+    ];
+
+    const breadcrumbs = [
+        { title: "Permissions Management", href: "/permissions" },
+    ];
 
     return (
-        <>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Permissions Management" />
-            
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Permissions Management
-                    </h1>
-                    <Link
-                        href="/permissions/create"
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Create Permission
-                    </Link>
-                </div>
 
-                <div className="space-y-4">
-                    {Object.entries(permissions).map(([group, groupPermissions]) => (
-                        <div
-                            key={group}
-                            className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden"
-                        >
-                            <div className="bg-gray-50 dark:bg-gray-900 px-6 py-3 border-b border-gray-200 dark:border-gray-700">
-                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-                                    {group} Permissions
-                                </h2>
-                            </div>
-                            
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-900">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Permission Name
-                                        </th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {groupPermissions.map((permission) => (
-                                        <tr key={permission.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {permission.name}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <div className="flex justify-end gap-2">
-                                                    <Link
-                                                        href={`/permissions/${permission.id}/edit`}
-                                                        className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => deletePermission(permission.id)}
-                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ))}
+            {flash?.success && (
+                <div className="mb-6 rounded-lg bg-green-50 dark:bg-green-900/20 px-4 py-3 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {flash.success}
+                    </div>
                 </div>
-            </div>
-        </>
+            )}
+
+            {flash?.error && (
+                <div className="mb-6 rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800">
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {flash.error}
+                    </div>
+                </div>
+            )}
+
+            <DataTableWrapper
+                fetchUrl="/permissions-data"
+                columns={columns}
+                csvHeaders={[
+                    { label: "ID", key: "id" },
+                    { label: "Permission Name", key: "name" },
+                    { label: "Category", key: "category" },
+                    { label: "Description", key: "description" },
+                    { label: "Roles Count", key: "roles_count" },
+                ]}
+                createUrl={isAdmin ? "/permissions/create" : undefined}
+                createLabel={isAdmin ? "+ Create Permission" : ""}
+            />
+        </AppLayout>
     );
 }
- 
