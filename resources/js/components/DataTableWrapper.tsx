@@ -27,6 +27,16 @@ interface DataTableWrapperProps {
   additionalFilters?: AdditionalFilter[];
 }
 
+interface ApiResponse {
+  data: any[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number;
+  to: number;
+}
+
 export default function DataTableWrapper({
   fetchUrl,
   columns,
@@ -39,36 +49,69 @@ export default function DataTableWrapper({
   const [loading, setLoading] = useState(true);
   const [filterText, setFilterText] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [totalRows, setTotalRows] = useState(0);
+  const [perPage, setPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // 🔄 Reload Data
-  const reloadData = useCallback(() => {
+  // 🔄 Reload Data with pagination
+  const reloadData = useCallback(async (page: number = currentPage, limit: number = perPage) => {
     setLoading(true);
 
     const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('per_page', limit.toString());
+    
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.append(key, value);
     });
 
-    const url = params.toString() ? `${fetchUrl}?${params}` : fetchUrl;
+    if (filterText) {
+      params.append('search', filterText);
+    }
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((result) => {
-        setData(result.data || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [fetchUrl, filters]);
+    try {
+      const url = `${fetchUrl}${fetchUrl.includes('?') ? '&' : '?'}${params.toString()}`;
+      const response = await fetch(url);
+      const result: ApiResponse = await response.json();
 
+      setData(result.data || []);
+      setTotalRows(result.total || 0);
+      setCurrentPage(result.current_page || 1);
+      setPerPage(result.per_page || 10);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setLoading(false);
+    }
+  }, [fetchUrl, filters, filterText, currentPage, perPage]);
+
+  // Initial load
   useEffect(() => {
-    reloadData();
-  }, [reloadData]);
+    reloadData(1, perPage);
+  }, []);
+
+  // Reload when filters or search change
+  useEffect(() => {
+    reloadData(1, perPage);
+  }, [filters, filterText]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    reloadData(page, perPage);
+  };
+
+  const handlePerRowsChange = async (newPerPage: number, page: number) => {
+    setPerPage(newPerPage);
+    setCurrentPage(1);
+    reloadData(1, newPerPage);
+  };
 
   const handleFilterChange = (name: string, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const filteredItems = data.filter(
+  // Client-side filtering for CSV/PDF export only
+  const filteredItemsForExport = data.filter(
     (item) =>
       item.company?.name?.toLowerCase().includes(filterText.toLowerCase()) ||
       item.company_name?.toLowerCase().includes(filterText.toLowerCase()) ||
@@ -225,6 +268,12 @@ export default function DataTableWrapper({
         backgroundColor: "#1e293b",
       },
     },
+    rowsPerPageDropdown: {
+      style: {
+        backgroundColor: '#1f2937', // gray-800
+        color: '#f9fafb',
+      },
+    },
   };
 
   // helper function to resolve nested keys like "user.name"
@@ -232,21 +281,21 @@ export default function DataTableWrapper({
     return key.split('.').reduce((acc, k) => (acc && acc[k] != null ? acc[k] : ""), obj);
   };
 
-  // 🧾 PDF Export Function (Logo + Date)
+  // 🧾 PDF Export Function
   const exportPDF = (openInNewTab = false) => {
     const doc = new jsPDF();
 
     // --- Prepare Table Data ---
     const tableColumn = csvHeaders.map((h) => h.label);
-    const tableRows = filteredItems.map((row) =>
+    const tableRows = filteredItemsForExport.map((row) =>
       csvHeaders.map((h) => resolveKey(row, h.key))
     );
 
     // --- Add Logo ---
     const img = new Image();
-    img.src = "/logo.png"; // public folder me logo
+    img.src = "/logo.png";
     img.onload = () => {
-      doc.addImage(img, "PNG", 14, 10, 40, 15); // x, y, width, height
+      doc.addImage(img, "PNG", 14, 10, 40, 15);
 
       // --- Add Title & Date ---
       doc.setFontSize(12);
@@ -258,7 +307,7 @@ export default function DataTableWrapper({
       (autoTable as any)(doc, {
         head: [tableColumn],
         body: tableRows,
-        startY: 35, // logo + title ke neeche
+        startY: 35,
         styles: { fontSize: 8 },
         headStyles: { fillColor: [220, 220, 220] },
       });
@@ -324,7 +373,7 @@ export default function DataTableWrapper({
         />
         <div className="flex gap-2">
           <CSVLink
-            data={filteredItems.map((row) => {
+            data={filteredItemsForExport.map((row) => {
               const newRow: Record<string, any> = {};
               csvHeaders.forEach((h) => {
                 newRow[h.key] = resolveKey(row, h.key);
@@ -379,16 +428,20 @@ export default function DataTableWrapper({
               }
               : col
           )}
-          data={filteredItems}
+          data={data}
           progressPending={loading}
           pagination
+          paginationServer
+          paginationTotalRows={totalRows}
+          onChangePage={handlePageChange}
+          onChangeRowsPerPage={handlePerRowsChange}
           highlightOnHover
           striped
           responsive
           subHeader
           subHeaderComponent={subHeaderComponent}
           customStyles={document.documentElement.classList.contains('dark') ? darkCustomStyles : customStyles}
-          paginationPerPage={10}
+          paginationPerPage={perPage}
           paginationRowsPerPageOptions={[10, 20, 30, 50, 100]}
         />
       </div>

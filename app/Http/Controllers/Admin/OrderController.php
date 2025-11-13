@@ -11,10 +11,12 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log; // ✅ Yeh add karo
 
 class OrderController extends Controller
 {
-    public function index()
+
+    public function index(Request $request)
     {
         $user = auth()->user();
         $companies = Company::active()
@@ -25,6 +27,8 @@ class OrderController extends Controller
         return Inertia::render('Orders/Index', [
             'companies' => $companies,
             'isClient' => $user->isClient(),
+            'status' => $request->get('status', ''), // URL se status parameter pass karein
+
         ]);
     }
 
@@ -44,7 +48,7 @@ class OrderController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        // Apply filters
+        // Apply filters from request parameters
         if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
         }
@@ -62,19 +66,19 @@ class OrderController extends Controller
             $query->where(function ($q) use ($search, $user) {
                 $q->whereHas('company', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('symbol', 'like', "%{$search}%");
+                    ->orWhere('symbol', 'like', "%{$search}%");
                 });
                 
                 // Only search by user name if admin/broker
                 if (!$user->isClient()) {
                     $q->orWhereHas('user', function ($q) use ($search) {
                         $q->where('name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('email', 'like', "%{$search}%");
                     });
                 }
                 
                 $q->orWhere('status', 'like', "%{$search}%")
-                  ->orWhere('type', 'like', "%{$search}%");
+                ->orWhere('type', 'like', "%{$search}%");
             });
         }
 
@@ -290,7 +294,7 @@ class OrderController extends Controller
         return back()->with('success', 'Order rejected.');
     }
     
-    public function execute(Order $order)
+    public function execute_old(Order $order)
     {
         // Only allow execution of approved orders (adjust if your flow differs)
         if ($order->status !== 'approved') {
@@ -378,6 +382,102 @@ class OrderController extends Controller
 
             // Friendly message to user (avoid exposing internal trace in production)
             return back()->withErrors(['error' => 'Failed to execute order. '.$e->getMessage()]);
+        }
+    }
+
+    public function execute(Order $order)
+    {
+        // Only allow execution of approved orders
+        if ($order->status !== 'approved') {
+            return back()->withErrors(['error' => 'Order must be approved before execution.']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $user = $order->user;
+
+            // Re-check preconditions to avoid race conditions
+            if ($order->type === 'sell') {
+                $portfolio = Portfolio::where('user_id', $order->user_id)
+                    ->where('company_id', $order->company_id)
+                    ->first();
+
+                if (!$portfolio) {
+                    DB::rollBack();
+                    return back()->withErrors(['error' => "User does not own any shares of {$order->company->name}."]);
+                }
+
+                if ($portfolio->shares_owned < $order->quantity) {
+                    DB::rollBack();
+                    return back()->withErrors(['error' => "User does not have enough shares to sell."]);
+                }
+            } else { // buy
+                $balance = $user->accountBalance ?? AccountBalance::create(['user_id' => $user->id]);
+                if ($balance->cash_balance < $order->total_amount) {
+                    DB::rollBack();
+                    return back()->withErrors(['error' => 'Insufficient funds to execute buy order.']);
+                }
+            }
+
+            // Mark order executed (timestamp + executor)
+            $order->update([
+                'status' => 'executed',
+                'executed_by' => auth()->id(),
+                'executed_at' => now(),
+            ]);
+
+            // Perform business logic
+            if ($order->type === 'buy') {
+                $this->processBuyOrder($order);
+            } else {
+                $this->processSellOrder($order);
+            }
+
+            // Create transaction record with proper status
+            Transaction::create([
+                'user_id' => $order->user_id,
+                'order_id' => $order->id,
+                'type' => $order->type,
+                'amount' => $order->total_amount,
+                'adjusted_amount' => $order->total_amount, // Same as amount for buy/sell orders
+                'status' => 'completed', // Buy/sell transactions are immediately completed
+                'description' => "{$order->type} {$order->quantity} shares of {$order->company->name}",
+                'metadata' => [
+                    'company_id' => $order->company_id,
+                    'quantity' => $order->quantity,
+                    'price_per_share' => $order->price_per_share,
+                    'order_executed_at' => now()->toISOString(),
+                ],
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+
+            // Notify client
+            createNotification(
+                'client',
+                "Your {$order->type} order for {$order->company->name} has been executed.",
+                $order->user_id,
+                'order',
+                'Order Executed'
+            );
+
+            DB::commit();
+
+            return back()->with('success', 'Order executed successfully.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            // Log full error for debugging
+            \Log::error('Order execution failed', [
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Friendly message to user
+            return back()->withErrors(['error' => 'Failed to execute order. ' . $e->getMessage()]);
         }
     }
 

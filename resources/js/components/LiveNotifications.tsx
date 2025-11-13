@@ -104,7 +104,7 @@ export default function LiveNotifications() {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger className="relative focus:outline-none">
-        <Bell className="w-6 h-6 text-gray-600 hover:text-gray-800 transition" />
+        <Bell className="w-6 h-6 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5 min-w-[20px] h-5 flex items-center justify-center font-medium">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -112,13 +112,16 @@ export default function LiveNotifications() {
         )}
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-96 max-h-[500px] overflow-y-auto">
-        <div className="flex items-center justify-between p-3 border-b sticky top-0 bg-white z-10">
-          <h3 className="font-semibold text-sm">Notifications</h3>
+      <DropdownMenuContent 
+        className="w-96 max-h-[500px] overflow-y-auto bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg"
+        align="end"
+      >
+        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Notifications</h3>
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors"
             >
               Mark all as read
             </button>
@@ -126,17 +129,19 @@ export default function LiveNotifications() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-8 text-gray-500">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 dark:border-gray-100"></div>
             <p className="mt-2 text-sm">Loading...</p>
           </div>
         ) : notifications.length > 0 ? (
-          <div className="divide-y">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {notifications.map((n) => (
               <DropdownMenuItem
                 key={n.id}
-                className={`flex flex-col items-start p-3 cursor-pointer hover:bg-gray-50 ${
-                  !n.is_read ? "bg-blue-50 hover:bg-blue-100" : ""
+                className={`flex flex-col items-start p-3 cursor-pointer transition-colors ${
+                  !n.is_read 
+                    ? "bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30" 
+                    : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
                 onSelect={(e) => e.preventDefault()}
               >
@@ -146,14 +151,14 @@ export default function LiveNotifications() {
                     onClick={() => !n.is_read && markAsRead(n.id)}
                   >
                     {n.title && (
-                      <p className="font-semibold text-sm text-gray-900 truncate">
+                      <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">
                         {n.title}
                       </p>
                     )}
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                       {n.message}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                       {formatTimeAgo(n.created_at)}
                     </p>
                   </div>
@@ -165,10 +170,10 @@ export default function LiveNotifications() {
                           e.stopPropagation();
                           markAsRead(n.id);
                         }}
-                        className="p-1.5 hover:bg-gray-200 rounded transition"
+                        className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
                         title="Mark as read"
                       >
-                        <Check className="w-4 h-4 text-green-600" />
+                        <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
                       </button>
                     )}
                     <button
@@ -176,10 +181,10 @@ export default function LiveNotifications() {
                         e.stopPropagation();
                         deleteNotification(n.id);
                       }}
-                      className="p-1.5 hover:bg-gray-200 rounded transition"
+                      className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
                       title="Delete"
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
                     </button>
                   </div>
                 </div>
@@ -187,9 +192,9 @@ export default function LiveNotifications() {
             ))}
           </div>
         ) : (
-          <DropdownMenuItem className="text-center text-gray-500 py-8">
+          <DropdownMenuItem className="text-center text-gray-500 dark:text-gray-400 py-8 cursor-default">
             <div className="flex flex-col items-center">
-              <Bell className="w-12 h-12 text-gray-300 mb-2" />
+              <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-2" />
               <p className="text-sm">No notifications</p>
             </div>
           </DropdownMenuItem>
@@ -197,9 +202,9 @@ export default function LiveNotifications() {
 
         {notifications.length > 0 && (
           <>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
             <DropdownMenuItem
-              className="text-center text-sm text-blue-600 hover:text-blue-800 cursor-pointer py-3 font-medium"
+              className="text-center text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer py-3 font-medium transition-colors"
               onSelect={() => (window.location.href = "/notifications")}
             >
               View all notifications →

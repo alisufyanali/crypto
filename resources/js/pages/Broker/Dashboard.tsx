@@ -508,13 +508,6 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
               >
                 Add New Company
               </Link>
-
-              <Link
-                href="/reports"
-                className="block w-full bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-center py-3 px-4 rounded-lg font-medium transition-colors"
-              >
-                Generate Reports
-              </Link>
             </div>
           </div>
         </div>
@@ -602,26 +595,6 @@ export default function BrokerDashboard({ pendingOrders, stats, topStocks }: Pro
                           >
                             <Eye className="w-4 h-4" />
                           </Link>
-                          <button
-                            onClick={() => handleApproveOrder(order.id)}
-                            disabled={processingOrder === order.id}
-                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 disabled:opacity-50 p-1"
-                            title="Approve Order"
-                          >
-                            {processingOrder === order.id ? (
-                              <div className="w-4 h-4 border-2 border-green-600 dark:border-green-400 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <CheckCircle className="w-4 h-4" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => setShowRejectModal(order.id)}
-                            disabled={processingOrder === order.id}
-                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 disabled:opacity-50 p-1"
-                            title="Reject Order"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </tr>

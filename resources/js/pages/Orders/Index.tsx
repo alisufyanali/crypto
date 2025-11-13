@@ -1,10 +1,10 @@
 import AppLayout from "@/layouts/app-layout";
 import { type BreadcrumbItem } from "@/types";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { Eye, CheckCircle, XCircle, Clock, TrendingUp, TrendingDown, Trash } from "lucide-react";
 import DataTableWrapper from "@/components/DataTableWrapper";
 import DeleteConfirm from "@/components/DeleteConfirm";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: "Dashboard", href: "/dashboard" },
@@ -17,19 +17,51 @@ interface Company {
   symbol: string;
 }
 
-interface Props {
-  companies: Company[];
-  isClient: boolean;
+interface User {
+  name: string;
+  email: string;
 }
 
+interface Order {
+  id: number;
+  user?: User;
+  company?: Company;
+  type: string;
+  quantity: number;
+  price_per_share: number;
+  total_amount: number;
+  status: string;
+}
+
+interface PageProps {
+  companies: Company[];
+  isClient: boolean;
+  status?: string;
+  [key: string]: any; // This allows additional properties
+}
+
+// Define Props interface that extends PageProps
+interface Props extends PageProps {}
+
 export default function OrdersIndex({ companies, isClient }: Props) {
+  const { props } = usePage<PageProps>();
+  const { status: initialStatus } = props;
+
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showExecuteModal, setShowExecuteModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [rejectNotes, setRejectNotes] = useState("");
   const [processing, setProcessing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0); // Add this for forcing refresh
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [currentStatus, setCurrentStatus] = useState(initialStatus || '');
+
+  // URL parameters change hone par update karein
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusParam = urlParams.get('status');
+    setCurrentStatus(statusParam || '');
+  }, []); // Remove window.location.search from dependencies
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-RW', {
@@ -46,7 +78,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         setShowApproveModal(false);
         setSelectedOrder(null);
         setProcessing(false);
-        setRefreshKey(prev => prev + 1); // Force refresh
+        setRefreshKey(prev => prev + 1);
       },
       onError: () => {
         setProcessing(false);
@@ -67,7 +99,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         setSelectedOrder(null);
         setRejectNotes("");
         setProcessing(false);
-        setRefreshKey(prev => prev + 1); // Force refresh
+        setRefreshKey(prev => prev + 1);
       },
       onError: () => {
         setProcessing(false);
@@ -82,7 +114,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         setShowExecuteModal(false);
         setSelectedOrder(null);
         setProcessing(false);
-        setRefreshKey(prev => prev + 1); // Force refresh
+        setRefreshKey(prev => prev + 1);
       },
       onError: () => {
         setProcessing(false);
@@ -92,10 +124,10 @@ export default function OrdersIndex({ companies, isClient }: Props) {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: any }> = {
-      pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
-      approved: { color: "bg-blue-100 text-blue-800", icon: CheckCircle },
-      executed: { color: "bg-green-100 text-green-800", icon: CheckCircle },
-      rejected: { color: "bg-red-100 text-red-800", icon: XCircle },
+      pending: { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300", icon: Clock },
+      approved: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300", icon: CheckCircle },
+      executed: { color: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300", icon: CheckCircle },
+      rejected: { color: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300", icon: XCircle },
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -112,8 +144,11 @@ export default function OrdersIndex({ companies, isClient }: Props) {
   const getTypeBadge = (type: string) => {
     const isBuy = type === 'buy';
     return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${isBuy ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
+      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+        isBuy 
+          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
+          : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
+      }`}>
         {isBuy ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
         {type.charAt(0).toUpperCase() + type.slice(1)}
       </span>
@@ -123,76 +158,78 @@ export default function OrdersIndex({ companies, isClient }: Props) {
   const columns = [
     {
       name: "ID",
-      selector: (row: any) => row.id,
+      selector: (row: Order) => row.id,
       sortable: true,
       width: "7%"
     },
     ...(isClient ? [] : [{
       name: "Client",
-      selector: (row: any) => row.user?.name || 'N/A',
+      selector: (row: Order) => row.user?.name || 'N/A',
       sortable: true,
       width: "15%",
-      cell: (row: any) => (
+      cell: (row: Order) => (
         <div>
-          <div className="font-medium text-gray-900">{row.user?.name}</div>
-          <div className="text-xs text-gray-500">{row.user?.email}</div>
+          <div className="font-medium text-gray-900 dark:text-white">{row.user?.name}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{row.user?.email}</div>
         </div>
       )
     }]),
     {
       name: "Company",
-      selector: (row: any) => row.company?.name || 'N/A',
+      selector: (row: Order) => row.company?.name || 'N/A',
       sortable: true,
       width: isClient ? "20%" : "15%",
-      cell: (row: any) => (
+      cell: (row: Order) => (
         <div>
-          <div className="font-medium text-gray-900">{row.company?.name}</div>
-          <div className="text-xs text-gray-500">{row.company?.symbol}</div>
+          <div className="font-medium text-gray-900 dark:text-white">{row.company?.name}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{row.company?.symbol}</div>
         </div>
       )
     },
     {
       name: "Type",
-      selector: (row: any) => row.type,
+      selector: (row: Order) => row.type,
       sortable: true,
       width: "10%",
-      cell: (row: any) => getTypeBadge(row.type)
+      cell: (row: Order) => getTypeBadge(row.type)
     },
     {
       name: "Quantity",
-      selector: (row: any) => row.quantity,
+      selector: (row: Order) => row.quantity,
       sortable: true,
       width: "10%",
-      cell: (row: any) => (
-        <span className="font-medium">{row.quantity.toLocaleString()}</span>
+      cell: (row: Order) => (
+        <span className="font-medium text-gray-900 dark:text-white">{row.quantity.toLocaleString()}</span>
       )
     },
     {
       name: "Price",
-      selector: (row: any) => row.price_per_share,
+      selector: (row: Order) => row.price_per_share,
       sortable: true,
       width: "12%",
-      cell: (row: any) => formatCurrency(row.price_per_share)
+      cell: (row: Order) => (
+        <span className="text-gray-900 dark:text-white">{formatCurrency(row.price_per_share)}</span>
+      )
     },
     {
       name: "Total",
-      selector: (row: any) => row.total_amount,
+      selector: (row: Order) => row.total_amount,
       sortable: true,
       width: "12%",
-      cell: (row: any) => (
-        <span className="font-semibold">{formatCurrency(row.total_amount)}</span>
+      cell: (row: Order) => (
+        <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(row.total_amount)}</span>
       )
     },
     {
       name: "Status",
-      selector: (row: any) => row.status,
+      selector: (row: Order) => row.status,
       sortable: true,
       width: "12%",
-      cell: (row: any) => getStatusBadge(row.status)
+      cell: (row: Order) => getStatusBadge(row.status)
     },
     {
       name: "Actions",
-      cell: (row: any, reloadData: () => void) => (
+      cell: (row: Order, reloadData: () => void) => (
         <div className="flex gap-2">
           {/* View */}
           <Link
@@ -290,7 +327,8 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         { value: 'approved', label: 'Approved' },
         { value: 'executed', label: 'Executed' },
         { value: 'rejected', label: 'Rejected' },
-      ]
+      ],
+      defaultValue: currentStatus // URL se status set karein
     },
     {
       name: 'type',
@@ -308,7 +346,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
       type: 'select' as const,
       options: [
         { value: '', label: 'All Companies' },
-        ...companies.map(c => ({ value: c.id.toString(), label: `${c.name} (${c.symbol})` }))
+        ...companies.map((c: Company) => ({ value: c.id.toString(), label: `${c.name} (${c.symbol})` }))
       ]
     }
   ] : [
@@ -322,7 +360,8 @@ export default function OrdersIndex({ companies, isClient }: Props) {
         { value: 'approved', label: 'Approved' },
         { value: 'executed', label: 'Executed' },
         { value: 'rejected', label: 'Rejected' },
-      ]
+      ],
+      defaultValue: currentStatus // URL se status set karein
     },
     {
       name: 'type',
@@ -340,23 +379,68 @@ export default function OrdersIndex({ companies, isClient }: Props) {
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Orders" />
 
+      {/* Status Filter Tabs (Optional) */}
+      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex space-x-8">
+          <button
+            onClick={() => router.get('/orders')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              !currentStatus 
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            All Orders
+          </button>
+          <button
+            onClick={() => router.get('/orders?status=pending')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              currentStatus === 'pending' 
+                ? 'border-yellow-500 text-yellow-600 dark:text-yellow-400' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Pending
+          </button>
+          <button
+            onClick={() => router.get('/orders?status=approved')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              currentStatus === 'approved' 
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Approved
+          </button>
+          <button
+            onClick={() => router.get('/orders?status=executed')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              currentStatus === 'executed' 
+                ? 'border-green-500 text-green-600 dark:text-green-400' 
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Executed
+          </button>
+        </div>
+      </div>
+
       <DataTableWrapper
-        key={refreshKey} // Add this key prop
-        fetchUrl="/orders/data"
+        key={refreshKey}
+        fetchUrl={`/orders/data${currentStatus ? `?status=${currentStatus}` : ''}`}
         columns={columns}
         csvHeaders={csvHeaders}
         createUrl="/orders/create"
         createLabel="+ Place New Order"
         additionalFilters={additionalFilters}
       />
-     
 
       {/* Approve Modal */}
       {showApproveModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Approve Order</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Approve Order</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Are you sure you want to approve this {selectedOrder.type} order for{' '}
               <strong>{selectedOrder.quantity}</strong> shares of{' '}
               <strong>{selectedOrder.company?.name}</strong>?
@@ -367,7 +451,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
                   setShowApproveModal(false);
                   setSelectedOrder(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                 disabled={processing}
               >
                 Cancel
@@ -387,25 +471,20 @@ export default function OrdersIndex({ companies, isClient }: Props) {
       {/* Reject Modal */}
       {showRejectModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Reject Order</h3>
-            <p className="text-gray-600 mb-4">
-              Rejecting {selectedOrder.type} order for{' '}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Reject Order</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Are you sure you want to reject this {selectedOrder.type} order for{' '}
               <strong>{selectedOrder.quantity}</strong> shares of{' '}
-              <strong>{selectedOrder.company?.name}</strong>
+              <strong>{selectedOrder.company?.name}</strong>?
             </p>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rejection Notes <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={rejectNotes}
-                onChange={(e) => setRejectNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                rows={4}
-                placeholder="Please provide reason for rejection..."
-              />
-            </div>
+            <textarea
+              value={rejectNotes}
+              onChange={(e) => setRejectNotes(e.target.value)}
+              placeholder="Please provide reason for rejection..."
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              rows={3}
+            />
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => {
@@ -413,7 +492,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
                   setSelectedOrder(null);
                   setRejectNotes("");
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                 disabled={processing}
               >
                 Cancel
@@ -423,7 +502,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                 disabled={processing}
               >
-                {processing ? 'Rejecting...' : 'Reject Order'}
+                {processing ? 'Rejecting...' : 'Reject'}
               </button>
             </div>
           </div>
@@ -433,26 +512,21 @@ export default function OrdersIndex({ companies, isClient }: Props) {
       {/* Execute Modal */}
       {showExecuteModal && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Execute Order</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Execute Order</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Are you sure you want to execute this {selectedOrder.type} order for{' '}
               <strong>{selectedOrder.quantity}</strong> shares of{' '}
-              <strong>{selectedOrder.company?.name}</strong>?
+              <strong>{selectedOrder.company?.name}</strong> at{' '}
+              <strong>{formatCurrency(selectedOrder.price_per_share)}</strong> per share?
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-yellow-800">
-                <strong>Warning:</strong> This action cannot be undone. The order will be processed
-                and portfolio/balance will be updated immediately.
-              </p>
-            </div>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => {
                   setShowExecuteModal(false);
                   setSelectedOrder(null);
                 }}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                 disabled={processing}
               >
                 Cancel
@@ -462,7 +536,7 @@ export default function OrdersIndex({ companies, isClient }: Props) {
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                 disabled={processing}
               >
-                {processing ? 'Executing...' : 'Execute Order'}
+                {processing ? 'Executing...' : 'Execute'}
               </button>
             </div>
           </div>

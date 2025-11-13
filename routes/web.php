@@ -34,12 +34,13 @@ Route::get('/clear-cache', function () {
 });
 
 // Public Contact Routes
-Route::get('/contact', [ContactController::class, 'index'])->name('contact');
-Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
-Route::get('/about-us', [OtherController::class, 'about'])->name('about');
+// Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+// Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+// Route::get('/about-us', [OtherController::class, 'about'])->name('about');
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    // return Inertia::render('welcome');
+    return redirect()->route('login');
 })->name('home');
 
 
@@ -65,6 +66,8 @@ Route::middleware(['auth', 'kyc'])->group(function () {
     Route::get('/transactions-data', [TransactionController::class, 'getData'])->name('transactions.data');
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+    Route::get('/transactions/{transaction}/edit', [TransactionController::class, 'edit'])->name('transactions.edit');
+    Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
 
     Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
     Route::post('/users/{user}/update-balance', [PortfolioController::class, 'updateBalance'])->name('users.update-balance');

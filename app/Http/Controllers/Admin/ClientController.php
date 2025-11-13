@@ -11,29 +11,60 @@ use Hash;
 
 class ClientController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Clients/Index');
+        // URL se kyc_status parameter pass karein frontend ko
+        return Inertia::render('Clients/Index', [
+            'kyc_status' => $request->get('kyc_status', '')
+        ]);
     }
 
-    public function getData()
+    public function getData(Request $request)
     {
-        $clients = User::where('role', 'client')->latest();
+        // Start with base query
+        $query = User::where('role', 'client');
 
-        return DataTables::of($clients)
-            ->addColumn('is_active', function($client) {
-                return $client->is_active ? 'Active' : 'Inactive';
-            })
-            ->make(true);
+        // KYC status filter apply karein
+        if ($request->has('kyc_status') && $request->kyc_status !== '') {
+            $query->where('kyc_status', $request->kyc_status);
+        }
+
+        // Search functionality
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('kyc_status', 'like', "%{$search}%");
+            });
+        }
+
+        // Sorting
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        // Pagination
+        $perPage = $request->input('per_page', 10);
+        $clients = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => $clients->items(),
+            'current_page' => $clients->currentPage(),
+            'last_page' => $clients->lastPage(),
+            'per_page' => $clients->perPage(),
+            'total' => $clients->total(),
+            'from' => $clients->firstItem(),
+            'to' => $clients->lastItem(),
+        ]);
     }
 
-    // Show create form
+    // ... rest of your methods remain the same
     public function create()
     {
         return Inertia::render('Clients/Create');
     }
 
-    // Store new client
     public function store(Request $request)
     {
         $request->validate([
@@ -46,16 +77,15 @@ class ClientController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'client', // fix role
+            'role'     => 'client',
+            'kyc_status' => 'pending',
         ]);
 
         return redirect()->route('clients.index')->with('success', 'Client created successfully.');
     }
 
-
-     public function edit(User $client)
+    public function edit(User $client)
     {
-        // sirf role client ka allow karo
         if ($client->role !== 'client') {
             abort(404);
         }
@@ -89,16 +119,14 @@ class ClientController extends Controller
         return redirect()->route('clients.index')->with('success', 'Client updated successfully.');
     }
 
-
     public function show(User $client)
     {
-        $client->load('kycDocuments'); // eager load documents
+        $client->load('kycDocuments');
 
         return Inertia::render('Clients/Show', [
             'client' => $client,
         ]);
     }
-
 
     public function destroy(User $client)
     {
@@ -107,17 +135,12 @@ class ClientController extends Controller
         return redirect()->route('clients.index')->with('success', 'Client deleted successfully.');
     }
 
-   
     public function toggleStatus(User $client)
     {
-        // Toggle the 'is_active' status
         $client->is_active = !$client->is_active;
         $client->save();
 
-        // Return a proper Inertia response
-        return back()->with('success', 'User status updated successfully.')->with([
-            'client' => $client // Pass updated client data back to the page
-        ]);
+        return back()->with('success', 'User status updated successfully.');
     }
 
     public function updateKycStatus(Request $request, User $client)
@@ -129,17 +152,14 @@ class ClientController extends Controller
         $client->kyc_status = $request->kyc_status;
         $client->save();
 
-         // ✅ Send notification to admin as well (optional)
-         createNotification(
+        createNotification(
             'client',
             "KYC status has been updated to {$request->kyc_status}.",
-            $client->id, // all admins
+            $client->id,
             'kyc',
             'Client KYC Updated'
         );
 
         return back()->with('success', 'KYC status updated successfully.');
     }
-
-
 }
